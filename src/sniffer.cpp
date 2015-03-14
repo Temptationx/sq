@@ -39,35 +39,17 @@ TinsSniffer::~TinsSniffer()
 
 void TinsSniffer::startSniff()
 {
-	assert(m_tinsSniffer);
 	Tins::TCPStreamFollower follower;
-	auto dataFun = [this](Tins::TCPStream &st) {
-		for (auto &cb : m_callbacks)
-		{
-			if (cb) {
-				auto id = convertID(st.stream_info());
-				promot(cb, id, st.client_payload(), CallReasonRequest);
-				promot(cb, id, st.server_payload(), CallReasonResponse);
-			}
-		}
-	};
-	auto closeFun = [this](Tins::TCPStream &st) {
-		for (auto &cb : m_callbacks)
-		{
-			if (cb) {
-				cb(convertID(st.stream_info()), nullptr, 0, CallReasonClose);
-			}
-		}
-	};
 	try {
 		std::lock_guard<std::mutex> l(m_mutex);
-		follower.follow_streams(*m_tinsSniffer, dataFun, closeFun);
-	}
-	catch (std::exception e){
-		printf("s");
+
+		using tins_fun = std::function<void(Tins::TCPStream &)>;
+		tins_fun data_fun = std::bind(&TinsSniffer::onData, this, std::placeholders::_1);
+		tins_fun close_fun = std::bind(&TinsSniffer::onClose, this, std::placeholders::_1);
+
+		follower.follow_streams(*m_tinsSniffer, data_fun, close_fun);
 	}
 	catch (...) {
-		printf("s");
 	}
 }
 
@@ -79,16 +61,36 @@ void TinsSniffer::stopSniff()
 
 void TinsSniffer::setFilter(const std::string &filter)
 {
-	assert(m_tinsSniffer);
 	m_tinsSniffer->set_filter(filter);
 }
 
-
-void TinsSniffer::promot(SnifferCallback &cb, const StreamID &id, std::vector<uint8_t> &v, CallReason reason)
+void TinsSniffer::promot(const SnifferCallback &cb, const StreamID &id, std::vector<uint8_t> &v, CallReason reason) const
 {
 	if (!v.empty()) {
 		cb(id, (const char*)v.data(), v.size(), reason);
 		v.clear();
+	}
+}
+
+void TinsSniffer::onData(Tins::TCPStream &st) const
+{
+	for (auto &cb : m_callbacks)
+	{
+		if (cb) {
+			auto id = convertID(st.stream_info());
+			promot(cb, id, st.client_payload(), CallReasonRequest);
+			promot(cb, id, st.server_payload(), CallReasonResponse);
+		}
+	}
+}
+
+void TinsSniffer::onClose(Tins::TCPStream &st) const
+{
+	for (auto &cb : m_callbacks)
+	{
+		if (cb) {
+			cb(convertID(st.stream_info()), nullptr, 0, CallReasonClose);
+		}
 	}
 }
 

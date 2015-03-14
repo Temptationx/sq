@@ -32,7 +32,9 @@ public:
 	virtual void stopSniff() override;
 	virtual void setFilter(const std::string &filter) override;
 private:
-	void promot(SnifferCallback &cb, const StreamID &id, std::vector<uint8_t> &v, CallReason reason);
+	void onData(Tins::TCPStream &st) const;
+	void onClose(Tins::TCPStream &st) const;
+	void promot(const SnifferCallback &cb, const StreamID &id, std::vector<uint8_t> &v, CallReason reason) const;
 	std::unique_ptr<Tins::Sniffer> m_tinsSniffer;
 	static const char *defaultFilter;
 };
