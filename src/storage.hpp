@@ -3,7 +3,7 @@
 #include "type.hpp"
 #include <vector>
 #include <set>
-#include <boost/filesystem.hpp>
+
 
 std::string md5(const char *data, size_t size);
 
