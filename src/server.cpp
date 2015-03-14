@@ -3,7 +3,6 @@
 #include <chrono>
 #include <functional>
 #include <string>
-#include <boost/log/trivial.hpp>
 #include <mongoose.h>
 #include "server.hpp"
 
@@ -62,10 +61,8 @@ private:
 				res = _this->m_listener(url);
 			}
 			if (!res) {
-				BOOST_LOG_TRIVIAL(trace) << "[server][!]: " << url;
 				return MG_FALSE;
 			}
-			BOOST_LOG_TRIVIAL(trace) << "[server]: " << url;
 			mg_send_status(conn, res->status);
 			if (res->headers) {
 				for (auto head : *res->headers)

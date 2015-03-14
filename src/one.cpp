@@ -1,7 +1,3 @@
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/utility/setup/file.hpp>
 #include "one.hpp"
 
 void Sq::link()
@@ -51,8 +47,7 @@ Sq::Sq(const std::string dir, int inter, int proxy_server_port)
 
 void Sq::enable_log()
 {
-	boost::log::add_file_log("log.txt");
-	boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::severity_level::trace);
+
 }
 
 void Sq::stop()

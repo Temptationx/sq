@@ -1,4 +1,3 @@
-#include <boost/log/trivial.hpp>
 #include <string>
 #include <http_parser.h>
 #include "parser.hpp"
@@ -204,7 +203,6 @@ void process_body(std::shared_ptr<Response> &res, const std::shared_ptr<std::vec
 			res->headers->erase(it);
 		}
 		else{
-			BOOST_LOG_TRIVIAL(error) << "[gzip][!][decompressed]";
 			res->body = body;
 		}
 	}
@@ -222,7 +220,6 @@ std::shared_ptr<Response> ResponseParser::get()
 		res = std::make_shared<Response>();
 		res->headers = move(header);
 		if (!res->headers) {
-			BOOST_LOG_TRIVIAL(error) << "[res_get][!]: No header";
 			res->headers = std::make_shared<std::map<std::string, std::string>>();
 		}
 		res->status = status;

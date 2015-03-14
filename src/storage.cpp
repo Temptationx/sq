@@ -1,13 +1,11 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
-#include <boost/log/trivial.hpp>
 #include <md5.h>
 #include "serialization.hpp"
 #include "storage.hpp"
 #include "stream.hpp"
 #include "url.hpp"
 namespace fs = boost::filesystem;
-namespace logging = boost::log;
 
 void charHex(unsigned char c, unsigned char &l, unsigned char &h)
 {
@@ -91,7 +89,6 @@ std::pair<std::shared_ptr<Response>, std::string> URLStorage::get(const std::str
 
 void URLStorage::add(const std::string &url, std::shared_ptr<Response> v)
 {
-	BOOST_LOG_TRIVIAL(trace)<<"[url]: "<<url;
 	m[url] = v;
 }
 
@@ -175,7 +172,6 @@ std::pair<std::shared_ptr<Response>, std::string> FileStorage::get(const std::st
 
 void FileStorage::add(const std::string &url, std::shared_ptr<Response> res)
 {
-	BOOST_LOG_TRIVIAL(trace) << "[file]: "<<url;
 	char *buf = nullptr;
 	auto size = Serialization::serialize(&buf, std::make_pair(url, res.get()));
 	auto m5 = md5(url.data(), url.size());

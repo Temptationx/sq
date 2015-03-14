@@ -23,20 +23,10 @@ set(MD5_RELEASE C:/Users/ning/Desktop/md5/build/Release/md5.lib)
 set(BOOST_INCLUDE C:/local/boost_1_57_0)
 set(BOOST_LIB_DIR C:/local/boost_1_57_0/lib32-msvc-12.0)
 set(BOOST_DEBUG "${BOOST_LIB_DIR}/libboost_filesystem-vc120-mt-gd-1_57.lib" 
-"${BOOST_LIB_DIR}/libboost_log-vc120-mt-gd-1_57.lib" 
-"${BOOST_LIB_DIR}/libboost_system-vc120-mt-gd-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_date_time-vc120-mt-gd-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_thread-vc120-mt-gd-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_log_setup-vc120-mt-gd-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_chrono-vc120-mt-gd-1_57.lib")
+"${BOOST_LIB_DIR}/libboost_system-vc120-mt-gd-1_57.lib")
 
 set(BOOST_RELEASE "${BOOST_LIB_DIR}/libboost_filesystem-vc120-mt-1_57.lib" 
-"${BOOST_LIB_DIR}/libboost_log-vc120-mt-1_57.lib" 
-"${BOOST_LIB_DIR}/libboost_system-vc120-mt-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_date_time-vc120-mt-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_thread-vc120-mt-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_log_setup-vc120-mt-1_57.lib"
-"${BOOST_LIB_DIR}/libboost_chrono-vc120-mt-1_57.lib")
+"${BOOST_LIB_DIR}/libboost_system-vc120-mt-1_57.lib")
 
 set(LUA_DIR C:/Users/ning/Desktop/lua-5.3.0)
 set(LUA_INCLUDE ${LUA_DIR}/src)
