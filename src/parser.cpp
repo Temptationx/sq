@@ -56,35 +56,35 @@ void ParserBase::reset()
 
 int ParserBase::onMessageBegin(http_parser *parser)
 {
-	auto _this = (THIS)parser->data;
+	auto _this = (THIS_PTR)parser->data;
 	_this->is_beg = true;
 	return 0;
 }
 
 int ParserBase::onMessageComplete(http_parser *parser)
 {
-	auto _this = (THIS)parser->data;
+	auto _this = (THIS_PTR)parser->data;
 	_this->is_complete = true;
 	return 0;
 }
 
 int ParserBase::onHeaderField(http_parser *parser, const char* data, size_t length)
 {
-	auto _this = (THIS)parser->data;
+	auto _this = (THIS_PTR)parser->data;
 	_this->field = std::string(data, length);
 	return 0;
 }
 
 int ParserBase::onHeaderValue(http_parser *parser, const char* data, size_t length)
 {
-	auto _this = (THIS)parser->data;
+	auto _this = (THIS_PTR)parser->data;
 	_this->header->emplace(_this->field, std::string(data, length));
 	return 0;
 }
 
 int ParserBase::onBody(http_parser *parser, const char* data, size_t length)
 {
-	auto _this = (THIS)parser->data;
+	auto _this = (THIS_PTR)parser->data;
 	_this->m_body->insert(_this->m_body->end(), data, data + length);
 	return 0;
 }

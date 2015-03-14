@@ -11,7 +11,7 @@ class Request;
 class Response;
 class ParserBase
 {
-	typedef ParserBase* THIS;
+	typedef ParserBase* THIS_PTR;
 public:
 	ParserBase();
 	ParserBase(int mode);
