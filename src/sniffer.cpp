@@ -1,6 +1,18 @@
 #include "sniffer.hpp"
 #include <cassert>
 
+ISniffer::ISniffer()
+{
+}
+
+ISniffer::~ISniffer()
+{
+}
+
+void ISniffer::addSnifferCallback(SnifferCallback consumer)
+{
+	m_callbacks.push_back(consumer);
+}
 
 StreamID convertID(const Tins::TCPStream::StreamInfo &info)
 {
@@ -81,16 +93,3 @@ void TinsSniffer::promot(SnifferCallback &cb, const StreamID &id, std::vector<ui
 }
 
 const char *TinsSniffer::defaultFilter = "tcp port 80";
-
-Sniffer::Sniffer()
-{
-}
-
-Sniffer::~Sniffer()
-{
-}
-
-void Sniffer::addSnifferCallback(SnifferCallback consumer)
-{
-	m_callbacks.push_back(consumer);
-}

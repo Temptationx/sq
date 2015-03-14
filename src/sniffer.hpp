@@ -7,22 +7,23 @@
 #include <tins/tins.h>
 #include "type.hpp"
 
-class Sniffer
+
+class ISniffer
 {
 public:
 	typedef std::function<void(const StreamID &, const char*, size_t, CallReason)> SnifferCallback;
-	Sniffer();
+	ISniffer();
 	virtual void startSniff() = 0;
 	virtual void stopSniff() = 0;
 	virtual void setFilter(const std::string &filter) = 0;
-	virtual ~Sniffer();
+	virtual ~ISniffer();
 	void addSnifferCallback(SnifferCallback consumer);
 protected:
 	std::mutex m_mutex;
 	std::list<SnifferCallback> m_callbacks;
 };
 
-class TinsSniffer : public Sniffer
+class TinsSniffer : public ISniffer
 {
 public:
 	TinsSniffer(int interface, bool promiscMode);
