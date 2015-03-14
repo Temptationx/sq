@@ -1,51 +1,10 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
-#include <md5.h>
 #include "serialization.hpp"
 #include "storage.hpp"
 #include "stream.hpp"
+#include "utility.hpp"
 #include "url.hpp"
-#include <easylogging++.h>
-namespace fs = boost::filesystem;
-
-void charHex(unsigned char c, unsigned char &l, unsigned char &h)
-{
-	l = c & 0x0F;
-	h = c >> 4;
-
-	if (l > 9) {
-		l = 'A' + l - 10;
-	}
-	else{
-		l = '0' + l;
-	}
-
-	if (h > 9) {
-		h = 'A' + h - 10;
-	}
-	else{
-		h = '0' + h;
-	}
-}
-
-std::string md5(const char *data, size_t size)
-{
-	MD5_CTX ctx = { 0 };
-	MD5_Init(&ctx);
-	MD5_Update(&ctx, data, size);
-	unsigned char result[16];
-	MD5_Final(result, &ctx);
-	char hex[32];
-	for (int i = 0; i < 16; i++)
-	{
-		unsigned char l, h;
-		charHex(result[i], l, h);
-		hex[i * 2] = h;
-		hex[i * 2 + 1] = l;
-	}
-	std::string hex_str = std::string(hex, 32);
-	return hex_str;
-}
 
 bool URLStorage::compare(const std::set<std::string> &reqired, const std::set<std::string> &t)
 {
@@ -90,6 +49,7 @@ std::pair<std::shared_ptr<Response>, std::string> URLStorage::get(const std::str
 
 void URLStorage::add(const std::string &url, std::shared_ptr<Response> v)
 {
+	// Log
 	m[url] = v;
 }
 
@@ -173,6 +133,7 @@ std::pair<std::shared_ptr<Response>, std::string> FileStorage::get(const std::st
 
 void FileStorage::add(const std::string &url, std::shared_ptr<Response> res)
 {
+	// Log
 	char *buf = nullptr;
 	auto size = Serialization::serialize(&buf, std::make_pair(url, res.get()));
 	auto m5 = md5(url.data(), url.size());

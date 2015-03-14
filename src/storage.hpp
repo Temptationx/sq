@@ -5,8 +5,6 @@
 #include <set>
 
 
-std::string md5(const char *data, size_t size);
-
 class IO
 {
 public:

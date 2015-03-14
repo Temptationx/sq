@@ -89,7 +89,9 @@ set(LIB_SRC src/sniffer.cpp
 		    src/serialization.cpp
 		    src/serialization.hpp
             src/one.cpp
-            src/one.hpp)
+            src/one.hpp
+            src/utility.hpp
+            src/utility.cpp)
 
 ###### Project ######
 add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)# -DBOOST_ALL_NO_LIB)
