@@ -22,12 +22,6 @@ void Sq::link()
 
 void Sq::sync()
 {
-	std::thread mm([this]() {
-		stream->start();
-	});
-	std::thread ss([this]() {
-		server->start();
-	});
 	mm.join();
 	ss.join();
 	stoped = 1;
