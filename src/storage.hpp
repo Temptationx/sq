@@ -25,22 +25,22 @@ public:
 	virtual std::vector<std::string> getAll(const std::string &dir) override;
 };
 
-class IStorage
+class IStore
 {
 public:
-	virtual ~IStorage(){};
+	virtual ~IStore(){};
 	virtual void add(const std::string &url, std::shared_ptr<Response> res) = 0;
 	virtual std::pair<std::shared_ptr<Response>, std::string> get(const std::string &filename) = 0;
 };
 
-class FileStorage : public IStorage
+class FileStorage : public IStore
 {
 public:
 	FileStorage(const std::string &dir, std::unique_ptr<IO> io);
 	virtual ~FileStorage();
 	virtual void add(const std::string &url, std::shared_ptr<Response> res);
 	virtual std::pair<std::shared_ptr<Response>, std::string> get(const std::string &filename);
-	void loadAll(IStorage &target_storage);
+	void loadAll(IStore &target_storage);
 public:
 	std::string m_dir;
 	std::unique_ptr<IO> m_io;
@@ -60,7 +60,7 @@ public:
 	}
 };
 
-class URLStorage : public IStorage
+class URLStorage : public IStore
 {
 	typedef std::map<std::string, std::shared_ptr<Response>> Map;
 public:
@@ -72,7 +72,7 @@ private:
 	Map m;
 };
 
-class PersistentStorage : public IStorage
+class PersistentStorage : public IStore
 {
 public:
 	PersistentStorage(std::unique_ptr<URLStorage> url_storage, std::unique_ptr<FileStorage> file_storage);

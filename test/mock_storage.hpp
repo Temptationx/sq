@@ -2,7 +2,7 @@
 #define mock_storage_h__
 #include <gmock/gmock.h>
 #include "../src/storage.hpp"
-class MockStorage : public IStorage
+class MockStorage : public IStore
 {
 public:
 	MOCK_METHOD2(add, void(const std::string &url, std::shared_ptr<Response> res));

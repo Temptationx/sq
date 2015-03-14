@@ -183,7 +183,7 @@ void FileStorage::add(const std::string &url, std::shared_ptr<Response> res)
 	delete[] buf;
 }
 
-void FileStorage::loadAll(IStorage &target_storage)
+void FileStorage::loadAll(IStore &target_storage)
 {
 	auto files = m_io->getAll(m_dir);
 	for (auto &file : files)

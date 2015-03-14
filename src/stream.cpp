@@ -8,7 +8,7 @@ Stream::~Stream()
 {
 }
 
-void IStream::addStreamCallback(StreamCallback cb)
+void IStreams::addStreamCallback(StreamCallback cb)
 {
 	m_callbacks.push_back(cb);
 }

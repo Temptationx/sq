@@ -9,16 +9,16 @@
 union StreamID;
 
 
-class IStream
+class IStreams
 {
 public:
-	virtual ~IStream(){};
+	virtual ~IStreams(){};
 	virtual void onCall(const StreamID &id, const char *data, size_t size, CallReason reason) = 0;
 	virtual void addStreamCallback(StreamCallback cb);
 	std::list<StreamCallback> m_callbacks;
 };
 
-class Stream : public IStream
+class Stream : public IStreams
 {
 public:
 	Stream();

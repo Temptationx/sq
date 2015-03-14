@@ -124,7 +124,7 @@ end
 )ABCD";
 }
 
-Proxy::Proxy(IStorage *storage) : m_storage(storage)
+Proxy::Proxy(IStore *storage) : m_storage(storage)
 {
 	defaultHandler = std::bind(&Proxy::searchCache, this, std::placeholders::_1);
 }

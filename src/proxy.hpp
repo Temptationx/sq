@@ -9,7 +9,7 @@
 class Proxy
 {
 public:
-	Proxy(IStorage *storage);
+	Proxy(IStore *storage);
 	typedef std::function<std::shared_ptr<Response>(const std::string &url)> Handler;
 	std::shared_ptr<Response> onRequest(const std::string &url);
 	void addHandler(const std::string &path, Handler handler);
@@ -19,6 +19,6 @@ private:
 	std::shared_ptr<Response> searchCache(const std::string &url);
 	Handler defaultHandler;
 	std::map<std::string, Handler> m_handlers;
-	IStorage *m_storage = nullptr;
+	IStore *m_storage = nullptr;
 };
 #endif // proxy_h__
