@@ -70,3 +70,7 @@ Sq::~Sq()
 	}
 }
 
+void Sq::add_rule(const std::string &path, const std::string &rules_script, const std::string &body_script)
+{
+	proxy->addHandler(path, rules_script, body_script);
+}

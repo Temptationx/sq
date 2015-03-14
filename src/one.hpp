@@ -16,6 +16,7 @@ public:
 	void sync();
 	void stop();
 	void enable_log(const std::string &log_filename);
+	void add_rule(const std::string &path, const std::string &rules_script, const std::string &body_script);
 private:
 	void link();
 	std::unique_ptr<SnifferStream> stream;
