@@ -11,7 +11,7 @@ class Sniffer
 {
 public:
 	typedef std::function<void(const StreamID &, const char*, size_t, CallReason)> SnifferCallback;
-	static Sniffer* New(int interface, bool promiscMode = true);
+	Sniffer();
 	virtual void startSniff() = 0;
 	virtual void stopSniff() = 0;
 	virtual void setFilter(const std::string &filter) = 0;
@@ -20,7 +20,6 @@ public:
 protected:
 	std::mutex m_mutex;
 	std::list<SnifferCallback> m_callbacks;
-	Sniffer();
 };
 
 class TinsSniffer : public Sniffer

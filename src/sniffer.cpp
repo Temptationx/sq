@@ -94,8 +94,3 @@ void Sniffer::addSnifferCallback(SnifferCallback consumer)
 {
 	m_callbacks.push_back(consumer);
 }
-
-Sniffer* Sniffer::New(int interface, bool promiscMode /* = true */)
-{
-	return new TinsSniffer(interface, promiscMode);
-}
