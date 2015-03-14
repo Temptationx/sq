@@ -9,6 +9,6 @@ using namespace std;
 void main()
 {
 	SnifferStream w(4);
-	w.start();
+	w.startSniff();
 }
 

@@ -30,7 +30,7 @@ void Sq::sync()
 void Sq::start()
 {
 	mm = std::thread([this]() {
-		stream->start();
+		stream->startSniff();
 	});
 	ss = std::thread([this]() {
 		server->start();
@@ -56,7 +56,7 @@ void Sq::enable_log(const std::string &log_filename)
 
 void Sq::stop()
 {
-	stream->stop();
+	stream->stopSniff();
 	server->stop();
 	mm.join();
 	ss.join();

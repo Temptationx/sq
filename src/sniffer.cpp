@@ -25,7 +25,7 @@ TinsSniffer::~TinsSniffer()
 {
 }
 
-void TinsSniffer::start()
+void TinsSniffer::startSniff()
 {
 	assert(m_tinsSniffer);
 	Tins::TCPStreamFollower follower;
@@ -59,7 +59,7 @@ void TinsSniffer::start()
 	}
 }
 
-void TinsSniffer::stop()
+void TinsSniffer::stopSniff()
 {
 	pcap_breakloop(m_tinsSniffer->get_pcap_handle());
 	std::lock_guard<std::mutex> l(m_mutex);
