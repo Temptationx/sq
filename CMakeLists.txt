@@ -62,7 +62,7 @@ set(LUA_RELEASE ${LUA_LIB_DIR}/Release/liblua.lib)
 include_directories(${LUA_INCLUDE})
 ################################
 include_directories("C:/usr/include"
-                        src)
+                    src)
 
 # Main Sources 
 set(LIB_SRC src/sniffer.cpp
