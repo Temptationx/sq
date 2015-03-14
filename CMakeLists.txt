@@ -1,25 +1,48 @@
 cmake_minimum_required(VERSION 3.0)
 project(sq)
 
-set(THIRD_DIR C:/Users/ning/Desktop)
-
-set(PCAP_INCLUDE "${THIRD_DIR}/WpdPack/Include")
+############# PCAP #############
+set(PCAP_INCLUDE "C:/Users/ning/Desktop/WpdPack/Include")
 set(PCAP_LIB C:/Users/ning/Desktop/WpdPack/Lib/wpcap.lib)
+include_directories(${PCAP_INCLUDE})
+################################
+
+############# Tins #############
 set(TINS_INCLUDE C:/Users/ning/Desktop/libtins-master/include)
 set(TINS_DEBUG C:/Users/ning/Desktop/libtins-master/build/lib/Debug/tins.lib)
 set(TINS_RELEASE C:/Users/ning/Desktop/libtins-master/build/lib/Release/tins.lib)
+include_directories(${TINS_INCLUDE})
+################################
+
+############# ZLib #############
 set(ZLIB_INCLUDE C:/Users/ning/Desktop/zlib-1.2.8/include)
 set(ZLIB_DEBUG C:/Users/ning/Desktop/zlib-1.2.8/build/Debug/zlibstaticd.lib)
 set(ZLIB_RELEASE C:/Users/ning/Desktop/zlib-1.2.8/build/Release/zlibstatic.lib)
+include_directories(${ZLIB_INCLUDE})
+################################
+
+########## Http-Parser #########
 set(HTTP_PARSER_INCLUDE C:/Users/ning/Desktop/http-parser-master)
 set(HTTP_PARSER_DEBUG C:/Users/ning/Desktop/http-parser-master/build/Debug/http_parser.lib)
 set(HTTP_PARSER_RELEASE C:/Users/ning/Desktop/http-parser-master/build/Release/http_parser.lib)
+include_directories(${HTTP_PARSER_INCLUDE})
+################################
+
+########### Mongoose ###########
 set(MONGOOSE_INCLUDE C:/Users/ning/Desktop/mongoose-master)
 set(MONGOOSE_DEBUG C:/Users/ning/Desktop/mongoose-master/build/Debug/mongoose.lib)
 set(MONGOOSE_RELEASE C:/Users/ning/Desktop/mongoose-master/build/Release/mongoose.lib)
+include_directories(${MONGOOSE_INCLUDE})
+################################
+
+############# MD5 ##############
 set(MD5_INCLUDE C:/Users/ning/Desktop/md5)
 set(MD5_DEBUG C:/Users/ning/Desktop/md5/build/Debug/md5.lib)
 set(MD5_RELEASE C:/Users/ning/Desktop/md5/build/Release/md5.lib)
+include_directories(${MD5_INCLUDE})
+################################
+
+############## Boost ###########
 set(BOOST_INCLUDE C:/local/boost_1_57_0)
 set(BOOST_LIB_DIR C:/local/boost_1_57_0/lib32-msvc-12.0)
 set(BOOST_DEBUG "${BOOST_LIB_DIR}/libboost_filesystem-vc120-mt-gd-1_57.lib" 
@@ -27,22 +50,18 @@ set(BOOST_DEBUG "${BOOST_LIB_DIR}/libboost_filesystem-vc120-mt-gd-1_57.lib"
 
 set(BOOST_RELEASE "${BOOST_LIB_DIR}/libboost_filesystem-vc120-mt-1_57.lib" 
 "${BOOST_LIB_DIR}/libboost_system-vc120-mt-1_57.lib")
+include_directories(${BOOST_INCLUDE})
+################################
 
+############## Lua ##############
 set(LUA_DIR C:/Users/ning/Desktop/lua-5.3.0)
 set(LUA_INCLUDE ${LUA_DIR}/src)
 set(LUA_LIB_DIR ${LUA_DIR}/build/src)
 set(LUA_DEBUG ${LUA_LIB_DIR}/Debug/liblua.lib)
 set(LUA_RELEASE ${LUA_LIB_DIR}/Release/liblua.lib)
-
-include_directories(    ${TINS_INCLUDE}
-                        ${PCAP_INCLUDE}
-                        ${HTTP_PARSER_INCLUDE}
-                        ${MONGOOSE_INCLUDE}
-                        ${ZLIB_INCLUDE}
-                        ${MD5_INCLUDE}
-                        ${BOOST_INCLUDE}
-                        ${LUA_INCLUDE}
-                        "C:/usr/include"
+include_directories(${LUA_INCLUDE})
+################################
+include_directories("C:/usr/include"
                         src)
 
 # Main Sources 
