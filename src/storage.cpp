@@ -113,7 +113,7 @@ std::pair<size_t, const char*> FIO::read(const std::string &filename)
 		return std::pair<size_t, const char*>();
 	}
 	char *buf = nullptr;
-	size_t size = boost::filesystem::file_size(p);
+	auto size = (size_t)boost::filesystem::file_size(p);
 	buf = new char[size];
 	std::ifstream f(p.string(), std::ifstream::in | std::ifstream::binary);
 
