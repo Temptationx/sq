@@ -2,3 +2,4 @@ build/
 *.suo
 *.sdf
 *.log
+/coverage.bat
