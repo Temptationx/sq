@@ -1,5 +1,7 @@
+#include <cassert>
 #include "url.hpp"
 #include "proxy.hpp"
+
 
 namespace LUAScript{
 	const char *lib = R"ABCD(function parse_tengine_url(url)
