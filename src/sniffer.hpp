@@ -10,6 +10,7 @@
 class Sniffer
 {
 public:
+	typedef std::function<void(const StreamID &, const char*, size_t, CallReason)> SnifferCallback;
 	static Sniffer* New(int interface, bool promiscMode = true);
 	virtual void start() = 0;
 	virtual void stop() = 0;
