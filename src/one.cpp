@@ -1,15 +1,22 @@
 #include "one.hpp"
+#include <easylogging++.h>
+
+INITIALIZE_EASYLOGGINGPP
 
 void Sq::link()
 {
 	storage->loadAll();
 	stream->addStreamCallback([this](const StreamID &id, shared_ptr<Request> req, shared_ptr<Response> res) {
 		if (req && res) {
+			LOG(TRACE)<< "[Cache]" <<req->url;
 			storage->add(req->url, res);
 		}
 	});
 	server->setListener([this](const string &url) -> shared_ptr < Response > {
-		return proxy->onRequest(url);
+		LOG(TRACE) << "[Server]" << url;
+		auto res = proxy->onRequest(url);
+		LOG(TRACE) << "[Server]" << (res ? " Found" : " Not Found");
+		return res;
 	});
 }
 
@@ -45,9 +52,12 @@ Sq::Sq(const std::string dir, int inter, int proxy_server_port)
 	link();
 }
 
-void Sq::enable_log()
+void Sq::enable_log(const std::string &log_filename)
 {
-
+	el::Configurations conf;
+	conf.setGlobally(el::ConfigurationType::Filename, log_filename);
+	el::Loggers::reconfigureLogger("default", conf);
+	LOG(INFO) << "App Start";
 }
 
 void Sq::stop()

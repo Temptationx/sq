@@ -5,6 +5,7 @@
 #include "storage.hpp"
 #include "stream.hpp"
 #include "url.hpp"
+#include <easylogging++.h>
 namespace fs = boost::filesystem;
 
 void charHex(unsigned char c, unsigned char &l, unsigned char &h)

@@ -42,6 +42,7 @@ include_directories(    ${TINS_INCLUDE}
                         ${MD5_INCLUDE}
                         ${BOOST_INCLUDE}
                         ${LUA_INCLUDE}
+                        "C:/usr/include"
                         src)
 
 # Main Sources 
