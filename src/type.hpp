@@ -31,7 +31,7 @@ struct Response
 	std::shared_ptr<HeaderMap> headers;
 	std::shared_ptr<std::vector<uint8_t>> body;
 	int status = 0;
-	std::string status_str;
+	std::string status_text;
 	bool operator == (const Response &rV) const;
 	bool operator == (const Response &rV);
 };

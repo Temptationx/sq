@@ -189,7 +189,7 @@ std::shared_ptr<Response> copy_response(Response *res)
 	rres->body = res->body;
 	rres->headers = res->headers;
 	rres->status = res->status;
-	rres->status_str = res->status_str;
+	rres->status_text = res->status_text;
 	return rres;
 }
 

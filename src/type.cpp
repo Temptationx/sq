@@ -5,7 +5,7 @@ bool Response::operator==(const Response &rV)
 	if (status != rV.status) {
 		return false;
 	}
-	if (status_str != rV.status_str) {
+	if (status_text != rV.status_text) {
 		return false;
 	}
 	if (!headers && rV.headers || headers && !rV.headers) {
@@ -32,7 +32,7 @@ bool Response::operator==(const Response &rV) const
 	if (status != rV.status) {
 		return false;
 	}
-	if (status_str != rV.status_str) {
+	if (status_text != rV.status_text) {
 		return false;
 	}
 	if (!headers && rV.headers || headers && !rV.headers) {
@@ -60,7 +60,7 @@ Response* ResponseBuilder::build(const std::string &body, std::map<std::string, 
 	std::remove_pointer<decltype(res->body)>::type a;
 	res->body = std::make_shared<std::vector<uint8_t>>(begin(body), end(body));
 	res->status = s;
-	res->status_str = ss;
+	res->status_text = ss;
 	res->headers = std::make_shared<std::map<std::string, std::string>>(begin(h), end(h));
 	return res;
 }

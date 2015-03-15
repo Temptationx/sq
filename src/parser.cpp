@@ -224,7 +224,7 @@ std::shared_ptr<Response> ResponseParser::get()
 			res->headers = std::make_shared<std::map<std::string, std::string>>();
 		}
 		res->status = status;
-		res->status_str = status_str;
+		res->status_text = status_str;
 		process_body(res, m_body);
 		m_body = nullptr;
 	}

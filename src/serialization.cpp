@@ -116,7 +116,7 @@ std::pair<std::string, Response*> Serialization::parse(const char *buf, size_t s
 		res->body = body;
 		res->headers = headers;
 		res->status = status_code;
-		res->status_str = status;
+		res->status_text = status;
 		return std::make_pair(url, res);
 	}
 	catch (...) {
