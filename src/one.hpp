@@ -16,12 +16,12 @@ public:
 	void sync();
 	void stop();
 	void enable_log(const std::string &log_filename);
-	void add_rule(const std::string &path, const std::string &rules_script, const std::string &body_script);
+	Proxy* proxy();
 private:
 	void link();
 	std::unique_ptr<SnifferStream> stream;
 	std::unique_ptr<PersistentStorage> storage;
-	std::unique_ptr<Proxy> proxy;
+	std::unique_ptr<Proxy> proxy_;
 	std::unique_ptr<IServer> server;
 	std::thread mm;
 	std::thread ss;
