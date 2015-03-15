@@ -14,7 +14,6 @@ class Proxy
 {
 public:
 	Proxy(IStore *storage);
-	Proxy(const Proxy &proxy);
 	~Proxy();
 	using PreHandler = std::function<std::string(const std::string &url)>;
 	using PostHandler = std::function<std::shared_ptr<Response>(const std::string &request_url, const std::string &cached_url, std::shared_ptr<Response>)>;

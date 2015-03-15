@@ -160,9 +160,26 @@ Proxy::Proxy(IStore *storage) : m_storage(storage)
 	m_L = reset_lua(nullptr);
 }
 
-Proxy::Proxy(const Proxy &proxy)
+Proxy::~Proxy()
 {
+	std::unique_lock<std::mutex> lua_lk(lua_mutex);
+	if (m_L) {
+		lua_close(m_L);
+	}
+}
 
+lua_State * Proxy::reset_lua(lua_State *L)
+{
+	std::unique_lock<std::mutex> lua_lk(lua_mutex);
+	if (L) {
+		lua_close(L);
+	}
+	L = luaL_newstate();
+	luaL_openlibs(L);
+	luaL_loadstring(L, LUAScript::lib);
+	auto e = lua_pcall(L, 0, 0, 0);
+	assert(!e);
+	return L;
 }
 
 std::shared_ptr<Response> Proxy::onRequest(std::string url)
@@ -294,26 +311,4 @@ end)ABC";
 	fmt::MemoryWriter w;
 	w.write(url_script_, (filter_type == FilterType::Accept ? "true" : "false"), list);
 	addPreRule(path, w.str());
-}
-
-lua_State * Proxy::reset_lua(lua_State *L)
-{
-	std::unique_lock<std::mutex> lua_lk(lua_mutex);
-	if (L) {
-		lua_close(L);
-	}
-	L = luaL_newstate();
-	luaL_openlibs(L);
-	luaL_loadstring(L, LUAScript::lib);
-	auto e = lua_pcall(L, 0, 0, 0);
-	assert(!e);
-	return L;
-}
-
-Proxy::~Proxy()
-{
-	std::unique_lock<std::mutex> lua_lk(lua_mutex);
-	if (m_L) {
-		lua_close(m_L);
-	}
 }
