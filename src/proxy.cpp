@@ -314,3 +314,25 @@ end)ABC";
 	w.write(url_script_, (filter_type == FilterType::Accept ? "true" : "false"), list);
 	addPreRule(path, w.str());
 }
+
+void Proxy::addPostBodyRule(const std::string &path, const std::string &replace_keyword)
+{
+	auto url_script = R"ABC(function post_rule(request_url, cache_url, body)
+	return replace_with_value(request_url, cache_url, body, '{}')
+end)ABC";
+	fmt::MemoryWriter w;
+	w.write(url_script, replace_keyword);
+	addPostRule(path, w.str());
+}
+
+void Proxy::addJSONPRule(const std::string &path, std::list<std::string> other_ignore_keyword, const std::string &replace_keyword /*= "callback"*/)
+{
+	other_ignore_keyword.push_front("callback");
+	std::string xx = "{";
+	for (auto keyword : other_ignore_keyword) {
+		xx += "'" + keyword + "',";
+	}
+	xx += "}";
+	addPreQueryFilter(path, FilterType::Ignore, xx);
+	addPostBodyRule(path, replace_keyword);
+}
