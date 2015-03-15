@@ -40,7 +40,7 @@ class StreamTest : public testing::Test
 public:
 	void SetUp()
 	{
-		std::function<void(const StreamID&, std::shared_ptr<Request>, std::shared_ptr<Response>)> fun = [this](const StreamID& id, std::shared_ptr<Request> req, std::shared_ptr<Response> res) {
+		IStreams::StreamCallback fun = [this](const StreamID& id, std::shared_ptr<Request> req, std::shared_ptr<Response> res) {
 			test.cb_call(id);
 			if (req && !res) {
 				test.req(req->url);

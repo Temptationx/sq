@@ -12,6 +12,7 @@ union StreamID;
 class IStreams
 {
 public:
+	using StreamCallback = std::function<void(const StreamID&, std::shared_ptr<CachePacket>)>;
 	virtual ~IStreams(){};
 	virtual void onCall(const StreamID &id, const char *data, size_t size, CallReason reason) = 0;
 	virtual void addStreamCallback(StreamCallback cb);

@@ -44,7 +44,6 @@ public:
 
 enum CallReason{ CallReasonRequest, CallReasonResponse, CallReasonClose };
 
-typedef std::function<void(const StreamID&, std::shared_ptr<Request>, std::shared_ptr<Response>)> StreamCallback;
 typedef std::function<std::shared_ptr<Response>(const std::string &reqUrl)> ServerCallback;
 
 #ifdef _WIN32
