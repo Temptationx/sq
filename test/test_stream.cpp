@@ -7,15 +7,6 @@
 
 using namespace std;
 
-/*
-Requirement:
-recv data
-use correct parser.
-check complete and build request and response 
-call consumer.
-close
-*/
-
 namespace
 {
 	class Test

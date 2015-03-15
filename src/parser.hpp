@@ -2,13 +2,15 @@
 #define parser_h__
 #include <memory>
 #include <vector>
+#include <cstdint>
 #include <map>
 #include <http_parser.h>
-#include <cstdint>
+
 struct http_parser;
 struct http_parser_settings;
 struct Request;
 struct Response;
+
 class ParserBase
 {
 	typedef ParserBase* THIS_PTR;
@@ -46,7 +48,7 @@ public:
 	virtual void reset();
 	std::shared_ptr<Request> get();
 private:
-	std::shared_ptr<Request> req;
+	std::shared_ptr<Request> request_;
 	static int onUrl(http_parser *parser, const char *data, size_t size);
 	static int onHeaderComplete(http_parser *parser);
 };
@@ -56,11 +58,11 @@ class ResponseParser : public ParserBase
 public:
 	ResponseParser();
 	int status = 0;
-	std::string status_str;
+	std::string status_text;
 	virtual void reset();
 	std::shared_ptr<Response> get();
 private:
-	std::shared_ptr<Response> res;
+	std::shared_ptr<Response> response_;
 	static int onHeaderComplete(http_parser *parser);
 	static int onStatus(http_parser *parser, const char* data, size_t length);
 };

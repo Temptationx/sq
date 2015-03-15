@@ -106,7 +106,7 @@ void RequestParser::reset()
 	ParserBase::reset();
 	m_method = -1;
 	m_url.clear();
-	req = nullptr;
+	request_ = nullptr;
 }
 
 int RequestParser::onUrl(http_parser *parser, const char *data, size_t size)
@@ -131,13 +131,13 @@ std::shared_ptr<Request> RequestParser::get()
 	if (!is_complete) {
 		return nullptr;
 	}
-	if (!req) {
-		req = std::make_shared<Request>();
-		req->headers = move(header);
-		req->method = m_method;
-		req->url = m_url;
+	if (!request_) {
+		request_ = std::make_shared<Request>();
+		request_->headers = move(header);
+		request_->method = m_method;
+		request_->url = m_url;
 	}
-	return req;
+	return request_;
 }
 
 ResponseParser::ResponseParser() : ParserBase(1)
@@ -150,7 +150,7 @@ void ResponseParser::reset()
 {
 	ParserBase::reset();
 	status = 0;
-	res = nullptr;
+	response_ = nullptr;
 }
 
 int ResponseParser::onHeaderComplete(http_parser *parser)
@@ -217,23 +217,23 @@ std::shared_ptr<Response> ResponseParser::get()
 	if (!is_complete) {
 		return nullptr;
 	}
-	if (!res) {
-		res = std::make_shared<Response>();
-		res->headers = move(header);
-		if (!res->headers) {
-			res->headers = std::make_shared<std::map<std::string, std::string>>();
+	if (!response_) {
+		response_ = std::make_shared<Response>();
+		response_->headers = move(header);
+		if (!response_->headers) {
+			response_->headers = std::make_shared<std::map<std::string, std::string>>();
 		}
-		res->status = status;
-		res->status_text = status_str;
-		process_body(res, m_body);
+		response_->status = status;
+		response_->status_text = status_text;
+		process_body(response_, m_body);
 		m_body = nullptr;
 	}
-	return res;
+	return response_;
 }
 
 int ResponseParser::onStatus(http_parser *parser, const char* data, size_t length)
 {
 	auto _this = (ResponseParser*)parser->data;
-	_this->status_str = std::string(data, length);
+	_this->status_text = std::string(data, length);
 	return 0;
 }

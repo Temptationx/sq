@@ -202,8 +202,7 @@ std::string filter(const std::string &url, std::vector<std::string> params, Filt
 	auto header = parseQuery(query);
 	std::map<std::string, std::string> out;
 	if (filter == optin) {
-		for (auto &param : params)
-		{
+		for (auto &param : params) {
 			auto it = header.find(param);
 			if (it == header.end()) {
 				throw std::exception();
@@ -214,8 +213,7 @@ std::string filter(const std::string &url, std::vector<std::string> params, Filt
 		}
 	}
 	else{
-		for (auto &param : params)
-		{
+		for (auto &param : params) {
 			auto it = header.find(param);
 			if (it == header.end()) {
 				continue;
