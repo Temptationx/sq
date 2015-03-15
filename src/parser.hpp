@@ -7,8 +7,8 @@
 #include <cstdint>
 struct http_parser;
 struct http_parser_settings;
-class Request;
-class Response;
+struct Request;
+struct Response;
 class ParserBase
 {
 	typedef ParserBase* THIS_PTR;

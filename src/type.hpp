@@ -9,16 +9,25 @@
 
 typedef std::map<std::string, std::string> HeaderMap;
 
-class Request
+struct Request
 {
-public:
 	std::shared_ptr<HeaderMap> headers;
 	std::string url;
 	int method = 0;
 };
-class Response
+
+struct Response
 {
-public:
+	Response(){}
+	Response(std::shared_ptr<HeaderMap> headers_, 
+			std::shared_ptr<std::vector<uint8_t>> body_,
+			int status_,
+			const std::string &status_text_)
+			:headers(headers_),
+			body(body_),
+			status(status_),
+			status_text(status_text_)
+			{}
 	std::shared_ptr<HeaderMap> headers;
 	std::shared_ptr<std::vector<uint8_t>> body;
 	int status = 0;
