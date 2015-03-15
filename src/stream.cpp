@@ -38,11 +38,13 @@ void Stream::onCall(const StreamID &id, const char *data, size_t size, CallReaso
 			return;
 	}
 	if (request_parser.complete() || response_parser.complete()) {
+		auto request = request_parser.get();
+		auto resposne = response_parser.get();
+		auto url = request ? request->url : std::string();
+		auto pkt = std::make_shared<CachePacket>(url, request, resposne);
 		for (auto &cb : m_callbacks){
 			if (cb) {
-				cb(id, std::make_shared<CachePacket>(request_parser.get()->url,
-					request_parser.get(),
-					response_parser.get()));
+				cb(id, pkt);
 			}
 		}
 	}
