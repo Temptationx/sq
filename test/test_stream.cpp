@@ -40,13 +40,13 @@ class StreamTest : public testing::Test
 public:
 	void SetUp()
 	{
-		IStreams::StreamCallback fun = [this](const StreamID& id, std::shared_ptr<Request> req, std::shared_ptr<Response> res) {
+		IStreams::StreamCallback fun = [this](const StreamID& id, std::shared_ptr<CachePacket> pkt) {
 			test.cb_call(id);
-			if (req && !res) {
-				test.req(req->url);
+			if (pkt->request && !pkt->response) {
+				test.req(pkt->url);
 			}
-			if (res) {
-				test.res(res->status);
+			if (pkt->response) {
+				test.res(pkt->response->status);
 			}
 		};
 		stream.addStreamCallback(fun);

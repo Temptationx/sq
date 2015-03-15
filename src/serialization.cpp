@@ -85,6 +85,106 @@ Serialization::~Serialization()
 {
 }
 
+size_t Serialization::serialize(char **buf, const std::pair<std::string, Response*> &value)
+{
+	if (!value.second) {
+		return 0;
+	}
+	auto &url = value.first;
+	auto &response = *value.second;
+	size_t e_size = 0;
+	e_size += url.size();
+	std::string header;
+	if (response.headers) {
+		for (auto &it : *response.headers) {
+			header.append(it.first + ": " + it.second + "\r\n");
+		}
+	}
+	e_size += header.size();
+	if (response.body) {
+		e_size += response.body->size();
+	}
+	e_size += 512;
+	char *b = new char[e_size];
+	size_t p_size = sprintf(b, "GET %s HTTP/1.1\r\n\r\n", url.data());
+	p_size += sprintf(b + p_size, "HTTP/1.1 %d %s\r\n%s\r\n", response.status, response.status_text.data(), header.data());
+	if (response.body) {
+		memcpy(b + p_size, response.body->data(), response.body->size());
+		p_size += response.body->size();
+	}
+	*buf = b;
+	return p_size;
+}
+
+size_t Serialization::serialize(char **buf, const CachePacket &value)
+{
+	assert(value.response);
+
+	auto &url = value.url;
+	auto &response = *value.response;
+
+	// calculate buffer size
+	size_t buf_size = 0;
+	buf_size += url.size();
+	std::string header_text;
+	// serialize header
+	if (response.headers) {
+		for (auto &it : *response.headers) {
+			header_text.append(it.first + ": " + it.second + "\r\n");
+		}
+	}
+	buf_size += header_text.size();
+	if (response.body) {
+		buf_size += response.body->size();
+	}
+	buf_size += 512;	// additional buffer size
+	// serialize
+	char *data = new char[buf_size];
+	size_t used_size = sprintf(data, "GET %s HTTP/1.1\r\n\r\n", url.data());
+	used_size += sprintf(data + used_size, "HTTP/1.1 %d %s\r\n%s\r\n", response.status, response.status_text.data(), header_text.data());
+	if (response.body) {
+		memcpy(data + used_size, response.body->data(), response.body->size());
+		used_size += response.body->size();
+	}
+	*buf = data;
+	return used_size;
+}
+
+CachePacket* Serialization::parse2(size_t size, const char *buf)
+{
+	StringStream ss(buf, size);
+	std::string url;
+	try {
+		ss.extract(url, " ", " ");
+		ss.find("\r\n\r\n");  // Skip to response
+		std::string status_text;
+		ss.extract(status_text, " ", " ");
+		int status_code = std::stoi(status_text);
+		ss.pos -= 1;
+		ss.extract(status_text, " ", "\r\n");
+		ss.pos -= 2;
+		auto headers = std::make_shared<std::map<std::string, std::string>>();
+		std::string head;
+		while (true)
+		{
+			ss.extract(head, "\r\n", "\r\n");
+			if (head.empty()) {
+				break;
+			}
+			ss.pos -= 2;
+			auto pos = head.find(":");
+			headers->emplace(std::string(head, 0, pos), std::string(head, pos + 2));
+
+		}
+		auto body = std::make_shared<std::vector<uint8_t>>(ss.str + ss.pos, ss.str + ss.size);
+		auto response = std::make_shared<Response>(headers, body, status_code, status_text);
+		return new CachePacket{url, nullptr, response};
+	}
+	catch (...) {
+		return nullptr;
+	}
+}
+
 std::pair<std::string, Response*> Serialization::parse(const char *buf, size_t size)
 {
 	StringStream ss(buf, size);
@@ -122,36 +222,4 @@ std::pair<std::string, Response*> Serialization::parse(const char *buf, size_t s
 	catch (...) {
 		return std::pair<std::string, Response*>();
 	}
-}
-
-size_t Serialization::serialize(char **buf, const std::pair<std::string, Response*> &value)
-{
-	if (!value.second) {
-		return 0;
-	}
-	auto &url = value.first;
-	auto &res = *value.second;
-	size_t e_size = 0;
-	e_size += url.size();
-	std::string header;
-	if (res.headers) {
-		for (auto &it : *res.headers)
-		{
-			header.append(it.first + ": " + it.second + "\r\n");
-		}
-	}
-	e_size += header.size();
-	if (res.body) {
-		e_size += res.body->size();
-	}
-	e_size += 512;
-	char *b = new char[e_size];
-	size_t p_size = sprintf(b, "GET %s HTTP/1.1\r\n\r\n", url.data());
-	p_size += sprintf(b + p_size, "HTTP/1.1 %d %s\r\n%s\r\n", res.status, res.status_str.data(), header.data());
-	if (res.body) {
-		memcpy(b + p_size, res.body->data(), res.body->size());
-		p_size += res.body->size();
-	}
-	*buf = b;
-	return p_size;
 }

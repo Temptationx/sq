@@ -12,8 +12,8 @@ public:
 	Proxy(IStore *storage);
 	typedef std::function<std::shared_ptr<Response>(const std::string &url)> Handler;
 	std::shared_ptr<Response> onRequest(const std::string &url);
-	void addHandler(const std::string &path, Handler handler);
-	void addHandler(const std::string &path, const std::string &rules_script, const std::string &body_script);
+	void addRule(const std::string &path, Handler handler);
+	void addRule(const std::string &path, const std::string &rules_script, const std::string &body_script);
 private:
 	Handler& getHandler(const std::string &path);
 	std::shared_ptr<Response> searchCache(const std::string &url);

@@ -21,39 +21,40 @@ URLStorage::~URLStorage()
 {
 }
 
-std::pair<std::shared_ptr<Response>, std::string> URLStorage::get(const std::string &url)
+std::shared_ptr<CachePacket> URLStorage::get(const std::string &url)
 {
-	auto &it = m.find(url);
-	if (it != m.end()) {
-		return std::make_pair(it->second, it->first);
+	auto cache_it = cache_map.find(url);
+	if (cache_it != cache_map.end()) {
+		return cache_it->second;
 	}
-	std::string path1, query1;
-	parseURL(url, path1, query1);
-	auto querylist1 = separateStringSet(query1, '&');
-	std::string path2, query2;
-	std::set<std::string> querylist2;
-	for (auto &it : m)
+	// Special 
+	std::string request_path, request_query;
+	parse_url(url, request_path, request_query);
+	auto request_query_token = split_string(request_query, '&');
+
+	std::string cached_path, cached_query;
+	std::set<std::string> cached_query_token;
+	for (auto cache_it : cache_map)
 	{
-		parseURL(it.first, path2, query2);
-		if (path1 != path2) {
+		parse_url(cache_it.first, cached_path, cached_query);
+		if (request_path != cached_path) {
 			continue;
 		}
-		querylist2 = separateStringSet(query2, '&');
-		if (!compare(querylist1, querylist2)) {
+		cached_query_token = split_string(cached_query, '&');
+		if (!compare(request_query_token, cached_query_token)) {
 			continue;
 		}
-		return std::make_pair(it.second, it.first);
+		return cache_it.second;
 	}
-	return std::pair<std::shared_ptr<Response>, std::string>();
+	return nullptr;
 }
 
-void URLStorage::add(const std::string &url, std::shared_ptr<Response> v)
+void URLStorage::add(const std::string &url, std::shared_ptr<CachePacket> data)
 {
-	// Log
-	m[url] = v;
+	cache_map[url] = data;
 }
 
-bool FIO::write(const std::string & dir, const std::string &filename, const char *data, size_t size)
+bool FIO::write(const std::string & dir, const std::string &filename, size_t size, const char *data)
 {
 	auto p = boost::filesystem::path(dir);
 	if (!boost::filesystem::exists(p) && !boost::filesystem::create_directories(p)) {
@@ -119,35 +120,33 @@ FileStorage::~FileStorage()
 {
 }
 
-std::pair<std::shared_ptr<Response>, std::string> FileStorage::get(const std::string &filename)
+std::shared_ptr<CachePacket> FileStorage::get(const std::string &filename)
 {
-	auto p = boost::filesystem::path(m_dir);
-	p.append(filename);
-	auto data = m_io->read(p.string());
+	auto path = boost::filesystem::path(m_dir);
+	path.append(filename);
+	auto data = m_io->read(path.string());
 	if (!data.first) {
-		return std::pair<std::shared_ptr<Response>, std::string>();
+		return nullptr;
 	}
-	auto pa = Serialization::parse(data.second, data.first);
-	return std::make_pair(std::shared_ptr<Response>(pa.second), pa.first);
+	auto cache_pkt = Serialization::parse2(data.first, data.second);
+	return std::shared_ptr<CachePacket>(cache_pkt);
 }
 
-void FileStorage::add(const std::string &url, std::shared_ptr<Response> res)
+void FileStorage::add(const std::string &url, std::shared_ptr<CachePacket> data)
 {
-	// Log
 	char *buf = nullptr;
-	auto size = Serialization::serialize(&buf, std::make_pair(url, res.get()));
-	auto m5 = md5(url.data(), url.size());
-	m_io->write(m_dir, m5, buf, size);
+	auto size = Serialization::serialize(&buf, *data);
+	auto url_md5 = md5(url.data(), url.size());
+	m_io->write(m_dir, url_md5, size, buf);
 	delete[] buf;
 }
 
 void FileStorage::loadAll(IStore &target_storage)
 {
 	auto files = m_io->getAll(m_dir);
-	for (auto &file : files)
-	{
-		auto res = get(file);
-		target_storage.add(res.second, res.first);
+	for (auto &filename : files) {
+		auto response = get(filename);
+		target_storage.add(response->url, response);
 	}
 }
 
@@ -155,13 +154,13 @@ PersistentStorage::~PersistentStorage()
 {
 }
 
-void PersistentStorage::add(const std::string &url, std::shared_ptr<Response> res)
+void PersistentStorage::add(const std::string &url, std::shared_ptr<CachePacket> data)
 {
-	m_url_storage->add(url, res);
-	m_file_storage->add(url, res);
+	m_url_storage->add(url, data);
+	m_file_storage->add(url, data);
 }
 
-std::pair<std::shared_ptr<Response>, std::string> PersistentStorage::get(const std::string &filename)
+std::shared_ptr<CachePacket> PersistentStorage::get(const std::string &filename)
 {
 	return m_url_storage->get(filename);
 }

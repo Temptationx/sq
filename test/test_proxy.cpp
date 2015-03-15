@@ -34,7 +34,7 @@ public:
 };
 TEST_F(XYTest, recvRequest)
 {
-	EXPECT_CALL(storage, get(testing::_)).WillRepeatedly(testing::Return(pair<shared_ptr<Response>, string>()));
+	EXPECT_CALL(storage, get(testing::_)).WillRepeatedly(testing::Return(shared_ptr<CachePacket>()));
 	ASSERT_FALSE(proxy.onRequest("http://www.baidu.com/"));
 }
 
@@ -48,11 +48,11 @@ TEST_F(XYTest, customHandle)
 
 TEST_F(XYTest, defaultHandle)
 {
-	EXPECT_CALL(storage, get(testing::_)).Times(2).WillRepeatedly(testing::Invoke([this](const string &url) -> std::pair<std::shared_ptr<Response>, std::string> {
+	EXPECT_CALL(storage, get(testing::_)).Times(2).WillRepeatedly(testing::Invoke([this](const string &url) -> std::shared_ptr<CachePacket> {
 		if (url == "http://tieba.baidu.com/") {
-			return make_pair(tieba_res, url);
+			return std::make_shared<CachePacket>(url, nullptr, tieba_res);
 		} 
-		return make_pair(nullptr, url);
+		return nullptr;
 	}));
 	ASSERT_EQ(nullptr, proxy.onRequest("http://www.google.com/"));
 	ASSERT_EQ(*tieba_res, *proxy.onRequest("http://tieba.baidu.com/"));
@@ -60,11 +60,11 @@ TEST_F(XYTest, defaultHandle)
 
 TEST_F(XYTest, defaultHandleWithCustomHandle1)
 {
-	EXPECT_CALL(storage, get(testing::_)).Times(2).WillRepeatedly(testing::Invoke([this](const string &url) -> std::pair < std::shared_ptr<Response>, std::string > {
+	EXPECT_CALL(storage, get(testing::_)).Times(2).WillRepeatedly(testing::Invoke([this](const string &url) -> std::shared_ptr<CachePacket> {
 		if (url == "http://tieba.baidu.com/") {
-			return make_pair(tieba_res, url);
+			return std::make_shared<CachePacket>(url, nullptr, tieba_res);
 		}
-		return make_pair(nullptr, url);
+		return nullptr;
 	}));
 	proxy.addHandler("http://www.google.com/search", [](const string &url) -> shared_ptr<Response> {
 		return nullptr;
@@ -76,20 +76,20 @@ TEST_F(XYTest, defaultHandleWithCustomHandle1)
 
 TEST_F(XYTest, defaultHandleWithCustomHandle2)
 {
-	EXPECT_CALL(storage, get(testing::_)).Times(3).WillRepeatedly(testing::Invoke([this](const string &url) -> std::pair < std::shared_ptr<Response>, std::string > {
+	EXPECT_CALL(storage, get(testing::_)).Times(3).WillRepeatedly(testing::Invoke([this](const string &url) -> std::shared_ptr<CachePacket> {
 		if (url == "http://tieba.baidu.com/") {
-			return make_pair(tieba_res, url);
+			return std::make_shared<CachePacket>(url, nullptr, tieba_res);
 		}
 		else if (url == "http://www.google.com/search?q=ccc"){
-			return make_pair(g_res, url);
+			return std::make_shared<CachePacket>(url, nullptr, g_res);
 		}
-		return make_pair(nullptr, url);
+		return nullptr;
 	}));
 	proxy.addHandler("http://www.google.com/search", [this](const string &url) -> shared_ptr < Response > {
 		string path, query;
-		parseURL(url, path, query);
+		parse_url(url, path, query);
 		auto url_search = filter(url, { "q" }, optin);
-		return this->storage.get(url_search).first;
+		return this->storage.get(url_search)->response;
 	});
 	ASSERT_EQ(nullptr, proxy.onRequest("http://www.google.com/"));
 	ASSERT_EQ(*tieba_res, *proxy.onRequest("http://tieba.baidu.com/"));
@@ -100,10 +100,10 @@ TEST_F(XYTest, defaultHandleWithCustomHandle2)
 TEST(PROXY_LUA, UrlRule)
 {
 	MockStorage storage;
-	auto prepare_response = std::make_shared<Response>();
-	prepare_response->status = 200;
-	auto res_pair = std::make_pair(prepare_response, "http://www.baidu.com/search.html?q=123");
-	EXPECT_CALL(storage, get("http://www.baidu.com/search.html?q=123")).Times(1).WillOnce(testing::Return(res_pair));
+	auto response = std::make_shared<Response>();
+	response->status = 200;
+	auto pkt = std::make_shared<CachePacket>( "http://www.baidu.com/search.html?q=123", nullptr, response);
+	EXPECT_CALL(storage, get("http://www.baidu.com/search.html?q=123")).Times(1).WillOnce(testing::Return(pkt));
 	Proxy proxy(&storage);
 	const char *url_script = R"ABC(
 function rules(request_url)
@@ -118,7 +118,7 @@ function rules(request_url)
 	path = path .. query
 	return path
 end)ABC";
-	proxy.addHandler("http://www.baidu.com/search.html", url_script, "");
+	proxy.addRule("http://www.baidu.com/search.html", url_script, "");
 	auto res = proxy.onRequest("http://www.baidu.com/search.html?q=123&t=1");
 	ASSERT_EQ(res->status, 200);
 }
@@ -126,12 +126,12 @@ end)ABC";
 TEST(PROXY_LUA, BodyRule)
 {
 	MockStorage storage;
-	auto prepare_response = std::make_shared<Response>();
-	prepare_response->status = 200;
+	auto response = std::make_shared<Response>();
+	response->status = 200;
 	std::string body_str = "jsonp1";
-	prepare_response->body = std::make_shared<std::vector<uint8_t>>(body_str.data(), body_str.data() + body_str.length());
-	auto res_pair = std::make_pair(prepare_response, "http://www.baidu.com/search.html?q=123&callback=jsonp1");
-	EXPECT_CALL(storage, get(testing::_)).Times(1).WillOnce(testing::Return(res_pair));
+	response->body = std::make_shared<std::vector<uint8_t>>(body_str.data(), body_str.data() + body_str.length());
+	auto pkt = std::make_shared<CachePacket>("http://www.baidu.com/search.html?q=123&callback=jsonp1", nullptr, response);
+	EXPECT_CALL(storage, get(testing::_)).Times(1).WillOnce(testing::Return(pkt));
 	Proxy proxy(&storage);
 	const char *url_script = R"ABC(function rules(request_url)
 	local q_mark = '?'
@@ -155,7 +155,7 @@ end)ABC";
 	body = body:gsub(cache_jsonp, request_jsonp)
 	return body
 end)ABC";
-	proxy.addHandler("http://www.baidu.com/search.html", url_script, body_script);
+	proxy.addRule("http://www.baidu.com/search.html", url_script, body_script);
 	auto res = proxy.onRequest("http://www.baidu.com/search.html?q=123&callback=jsonp2");
 	ASSERT_EQ(res->status, 200);
 	std::string modified_body_str = std::string(res->body->data(), res->body->data() + res->body->size());

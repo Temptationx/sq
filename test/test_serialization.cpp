@@ -17,7 +17,7 @@ public:
 		string body_str("Hello");
 		res.body->insert(res.body->end(), body_str.begin(), body_str.end());
 		res.status = 200;
-		res.status_str = "OK";
+		res.status_text = "OK";
 		res.headers = make_shared<map<string, string>>();
 		res.headers->emplace("Content-Length", "5");
 		

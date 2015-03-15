@@ -21,6 +21,8 @@ class Serialization
 public:
 	virtual ~Serialization();
 	static size_t serialize(char **buf, const std::pair<std::string, Response*> &value);
+	static size_t serialize(char **buf, const CachePacket &value);
 	static std::pair<std::string, Response*> parse(const char *buf, size_t size);
+	static CachePacket* parse2(size_t size, const char *buf);
 };
 #endif // serialization_h__

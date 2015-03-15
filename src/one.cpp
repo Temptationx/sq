@@ -4,10 +4,10 @@
 void Sq::link()
 {
 	storage->loadAll();
-	stream->addStreamCallback([this](const StreamID &id, shared_ptr<Request> req, shared_ptr<Response> res) {
-		if (req && res) {
-			spdlog::get("cache")->info() << req->url;
-			storage->add(req->url, res);
+	stream->addStreamCallback([this](const StreamID &id, shared_ptr<CachePacket> pkt) {
+		if (pkt->request && pkt->response) {
+			spdlog::get("cache")->info() << pkt->url;
+			storage->add(pkt->url, pkt);
 		}
 	});
 	server->setListener([this](const string &url) -> shared_ptr < Response > {
@@ -71,5 +71,5 @@ Sq::~Sq()
 
 void Sq::add_rule(const std::string &path, const std::string &rules_script, const std::string &body_script)
 {
-	proxy->addHandler(path, rules_script, body_script);
+	proxy->addRule(path, rules_script, body_script);
 }

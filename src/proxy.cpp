@@ -152,7 +152,7 @@ Proxy::Proxy(IStore *storage) : m_storage(storage)
 std::shared_ptr<Response> Proxy::searchCache(const std::string &url)
 {
 	auto res = m_storage->get(url);
-	return res.first;
+	return res->response;
 }
 
 Proxy::Handler& Proxy::getHandler(const std::string &path)
@@ -164,7 +164,7 @@ Proxy::Handler& Proxy::getHandler(const std::string &path)
 	return defaultHandler;
 }
 
-void Proxy::addHandler(const std::string &path, Handler handler)
+void Proxy::addRule(const std::string &path, Handler handler)
 {
 	m_handlers[path] = handler;
 }
@@ -213,7 +213,7 @@ std::shared_ptr<std::vector<uint8_t>> do_bodys(lua_State *L, const std::string &
 	return body;
 }
 
-void Proxy::addHandler(const std::string &path, const std::string &rules_script, const std::string &body_script)
+void Proxy::addRule(const std::string &path, const std::string &rules_script, const std::string &body_script)
 {
 	auto handler = [this, rules_script, body_script](const std::string &request_url)->std::shared_ptr<Response> {
 		lua_State *L = nullptr;
@@ -236,16 +236,16 @@ void Proxy::addHandler(const std::string &path, const std::string &rules_script,
 		if (!rules_script.empty()) {
 			modified_url = do_rules(L, request_url.data());
 		}
-		auto res_it = m_storage->get(modified_url);
-		auto res = res_it.first;
+		auto pkt = m_storage->get(modified_url);
+		auto response = pkt->response;
 		if (!body_script.empty()) {
-			res = copy_response(res_it.first.get());
-			res->body = do_bodys(L, request_url, res_it.second, (char *)res->body->data(), res->body->size());
+			response = copy_response(response.get());
+			response->body = do_bodys(L, request_url, pkt->url, (char *)response->body->data(), response->body->size());
 		}
 		lua_close(L);
-		return res;
+		return response;
 	};
-	addHandler(path, handler);
+	addRule(path, handler);
 }
 
 std::shared_ptr<Response> Proxy::onRequest(const std::string &url)

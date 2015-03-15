@@ -36,6 +36,17 @@ struct Response
 	bool operator == (const Response &rV);
 };
 
+struct CachePacket
+{
+	CachePacket(){}
+	CachePacket(const std::string &url_, std::shared_ptr<Request> request_, std::shared_ptr<Response> response_):
+		url(url_), request(request_), response(response_)
+		{}
+	std::string url;
+	std::shared_ptr<Request> request;
+	std::shared_ptr<Response> response;
+};
+
 class ResponseBuilder
 {
 public:
