@@ -61,6 +61,13 @@ set(LUA_DEBUG ${LUA_LIB_DIR}/Debug/liblua.lib)
 set(LUA_RELEASE ${LUA_LIB_DIR}/Release/liblua.lib)
 include_directories(${LUA_INCLUDE})
 ################################
+
+########## C++ Format ##########
+# Spdlog has already included C++ Format
+# set(CPPFORMAT_DIR C:\Users\ning\Desktop\cppformat-master)
+# set(CPPFORMAT_INCLUDE )
+################################
+
 include_directories("C:/usr/include"
                     src)
 
