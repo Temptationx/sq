@@ -251,7 +251,7 @@ void Proxy::addHandler(const std::string &path, const std::string &rules_script,
 std::shared_ptr<Response> Proxy::onRequest(const std::string &url)
 {
 	std::string path, query;
-	parseURL(url, path, query);
+	parse_url(url, path, query);
 	auto &handler = getHandler(path);
 	if (handler) {
 		return handler(url);
