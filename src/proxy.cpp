@@ -1,7 +1,7 @@
 #include <cassert>
 #include "url.hpp"
 #include "proxy.hpp"
-
+#include <spdlog/spdlog.h>
 
 namespace LUAScript{
 	const char *lib = R"ABCD(function parse_tengine_url(url)
@@ -141,120 +141,179 @@ function url_rules_core(request_url, is_accept_list, l)
 	path = path .. query
 	return path
 end
+
+function replace_with_value(request_url, cache_url, body, l)
+	local request_path, request_query = parse_url(request_url)
+	request_query = parse_query(request_query)
+	local cache_path, cache_query = parse_url(cache_url)
+	cache_query = parse_query(cache_query)
+	local request_jsonp = find_value(request_query, l)
+	local cache_jsonp = find_value(cache_query, l)
+	body = body:gsub(cache_jsonp, request_jsonp)
+	return body
+end
 )ABCD";
 }
 
 Proxy::Proxy(IStore *storage) : m_storage(storage)
 {
-	defaultHandler = std::bind(&Proxy::searchCache, this, std::placeholders::_1);
+	m_L = reset_lua(nullptr);
 }
 
-std::shared_ptr<Response> Proxy::searchCache(const std::string &url)
+Proxy::Proxy(const Proxy &proxy)
 {
-	auto res = m_storage->get(url);
-	return res->response;
+
 }
 
-Proxy::Handler& Proxy::getHandler(const std::string &path)
+std::shared_ptr<Response> Proxy::onRequest(std::string url)
 {
-	auto h = m_handlers.find(path);
-	if (h != m_handlers.end()) {
-		return h->second;
+	std::unique_lock<std::mutex> lua_lk(lua_mutex);
+
+	std::string path, query;
+	parse_url(url, path, query);
+	// Pre
+	auto it = m_pre_handlers.find(path);
+	std::string modified_url;
+	if (it != m_pre_handlers.end()) {
+		modified_url = it->second(url);
 	}
-	return defaultHandler;
+	else {
+		modified_url = url;
+	}
+
+	// lookup
+	auto cache = m_storage->get(modified_url);
+
+	// post
+	auto it2 = m_post_handlers.find(path);
+	if (it2 != m_post_handlers.end()) {
+		return it2->second(url, cache->url, cache->response);
+	}
+	if (cache && cache->response) {
+		return cache->response;
+	}
+	return nullptr;
 }
 
-void Proxy::addRule(const std::string &path, Handler handler)
+void Proxy::addPreRule(const std::string &path, PreHandler handler)
 {
-	m_handlers[path] = handler;
+	m_pre_handlers[path] = handler;
 }
 
-std::string do_rules(lua_State *L, const char *url)
+std::string pre_rule(lua_State *L, const std::string &url)
 {
-	lua_getglobal(L, "rules");
-	lua_pushstring(L, url);
+	lua_getglobal(L, "pre_rule");
+	lua_pushstring(L, url.data());
 	if (lua_pcall(L, 1, 1, 0)) {
 		printf("error %s\n", lua_tostring(L, -1));
+		throw 1;
 	}
 	if (!lua_isstring(L, -1)) {
 		printf("error rules must return a string");
+		throw 2;
 	}
 	std::string url_r = lua_tostring(L, -1);
 	return url_r;
 }
 
-std::shared_ptr<Response> copy_response(Response *res)
+void Proxy::addPreRule(const std::string &path, const std::string &pre_script)
 {
-	auto rres = std::make_shared<Response>();
-	rres->body = res->body;
-	rres->headers = res->headers;
-	rres->status = res->status;
-	rres->status_text = res->status_text;
-	return rres;
-}
-
-std::shared_ptr<std::vector<uint8_t>> do_bodys(lua_State *L, const std::string &request_url, const std::string &cache_url, const char *data, int size)
-{
-	lua_getglobal(L, "bodys");
-	lua_pushstring(L, request_url.data());
-	lua_pushstring(L, cache_url.data());
-	lua_pushlstring(L, data, size);
-	if (lua_pcall(L, 3, 1, 0))
-	{
-		printf("error %s\n", lua_tostring(L, -1));
+	if (pre_script.empty()) {
+		return;
 	}
-	if (!lua_isstring(L, -1))
-	{
-		printf("error bodys must return a string");
-	}
-	size_t len = 0;
-	auto d = lua_tolstring(L, -1, &len);
-	auto body = std::make_shared<std::vector<uint8_t>>(d, d+len);
-	return body;
-}
-
-void Proxy::addRule(const std::string &path, const std::string &rules_script, const std::string &body_script)
-{
-	auto handler = [this, rules_script, body_script](const std::string &request_url)->std::shared_ptr<Response> {
-		lua_State *L = nullptr;
-		L = luaL_newstate();
-		luaL_openlibs(L);
-		luaL_loadstring(L, LUAScript::lib);
-		auto e = lua_pcall(L, 0, 0, 0);
-		assert(!e);
-
-		luaL_loadstring(L, rules_script.data());
-		if (lua_pcall(L, 0, 0, 0)) {
-			printf("error %s\n", lua_tostring(L, -1));
+	auto handle = [this, pre_script](const std::string &url) -> std::string {
+		luaL_loadstring(m_L, pre_script.data());
+		if (lua_pcall(m_L, 0, 0, 0)) {
+			printf("error %s\n", lua_tostring(m_L, -1));
+			throw 1;
 		}
-
-		luaL_loadstring(L, body_script.data());
-		if (lua_pcall(L, 0, 0, 0)) {
-			printf("error %s\n", lua_tostring(L, -1));
-		}
-		auto modified_url = request_url;
-		if (!rules_script.empty()) {
-			modified_url = do_rules(L, request_url.data());
-		}
-		auto pkt = m_storage->get(modified_url);
-		auto response = pkt->response;
-		if (!body_script.empty()) {
-			response = copy_response(response.get());
-			response->body = do_bodys(L, request_url, pkt->url, (char *)response->body->data(), response->body->size());
-		}
-		lua_close(L);
-		return response;
+		return pre_rule(m_L, url);
 	};
-	addRule(path, handler);
+	addPreRule(path, handle);
 }
 
-std::shared_ptr<Response> Proxy::onRequest(const std::string &url)
+void Proxy::addPostRule(const std::string &path, PostHandler handler)
 {
-	std::string path, query;
-	parse_url(url, path, query);
-	auto &handler = getHandler(path);
-	if (handler) {
-		return handler(url);
+	m_post_handlers[path] = handler;
+}
+
+std::shared_ptr<Response> post_rule(lua_State *L, const std::string &request_url, const std::string &cached_url, std::shared_ptr<Response> response)
+{
+	if (!response) {
+		return nullptr;
 	}
-	return nullptr;
+	lua_getglobal(L, "post_rule");
+	lua_pushstring(L, request_url.data());
+	lua_pushstring(L, cached_url.data());
+	// push body
+	if(response && response->body) {
+		lua_pushlstring(L, (const char*)response->body->data(), response->body->size());
+	}
+	else{
+		lua_pushstring(L, "");
+	}
+	// call function
+	if (lua_pcall(L, 3, 1, 0)) {
+		printf("error %s\n", lua_tostring(L, -1));
+		throw 1;
+	}
+	if (!lua_isstring(L, -1)) {
+		printf("error bodys must return a string");
+		throw 2;
+	}
+	// copy body
+	response = std::make_shared<Response>(*response);
+	size_t len = 0;
+	auto data = lua_tolstring(L, -1, &len);
+	response->body = std::make_shared<std::vector<uint8_t>>(data, data + len);
+	return response;
+}
+
+void Proxy::addPostRule(const std::string &path, const std::string &post_script)
+{
+	if (post_script.empty()) {
+		return;
+	}
+	auto handle = [this, post_script](const std::string &request_url, const std::string &cached_url, std::shared_ptr<Response> response) -> std::shared_ptr<Response> {
+		luaL_loadstring(m_L, post_script.data());
+		if (lua_pcall(m_L, 0, 0, 0)) {
+			printf("error %s\n", lua_tostring(m_L, -1));
+			throw 1;
+		}
+		return post_rule(m_L, request_url, cached_url, response);
+	};
+	addPostRule(path, handle);
+}
+
+void Proxy::addPreQueryFilter(const std::string &path, FilterType filter_type, std::string list)
+{
+	auto url_script_ = R"ABC(function pre_rule(request_url)
+	return url_rules_core(request_url, {}, {})
+end)ABC";
+
+	fmt::MemoryWriter w;
+	w.write(url_script_, (filter_type == FilterType::Accept ? "true" : "false"), list);
+	addPreRule(path, w.str());
+}
+
+lua_State * Proxy::reset_lua(lua_State *L)
+{
+	std::unique_lock<std::mutex> lua_lk(lua_mutex);
+	if (L) {
+		lua_close(L);
+	}
+	L = luaL_newstate();
+	luaL_openlibs(L);
+	luaL_loadstring(L, LUAScript::lib);
+	auto e = lua_pcall(L, 0, 0, 0);
+	assert(!e);
+	return L;
+}
+
+Proxy::~Proxy()
+{
+	std::unique_lock<std::mutex> lua_lk(lua_mutex);
+	if (m_L) {
+		lua_close(m_L);
+	}
 }
