@@ -74,8 +74,6 @@ set(LIB_SRC src/sniffer.cpp
             src/type.hpp
             src/server.cpp
             src/server.hpp
-            src/gzip.cpp
-            src/gzip.hpp
             src/proxy.cpp
             src/proxy.hpp
             src/url.cpp
