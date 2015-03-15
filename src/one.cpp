@@ -6,14 +6,17 @@ void Sq::link()
 	storage->loadAll();
 	stream->addStreamCallback([this](const StreamID &id, shared_ptr<Request> req, shared_ptr<Response> res) {
 		if (req && res) {
-			spdlog::get("log")->info() << "[Cache] " <<req->url;
+			spdlog::get("cache")->info() << req->url;
 			storage->add(req->url, res);
 		}
 	});
 	server->setListener([this](const string &url) -> shared_ptr < Response > {
-		
+		if (url.find("hotclick.app") != std::string::npos)
+		{
+			return nullptr;
+		}
 		auto res = proxy->onRequest(url);
-		spdlog::get("log")->info() << "[Server] " << (res ? "[Found]" : "[!]") << " " << url;
+		spdlog::get("proxy")->info() << (res ? "[Found]" : "[!]") << " " << url;
 		return res;
 	});
 }
@@ -46,7 +49,8 @@ Sq::Sq(const std::string dir, int inter, int proxy_server_port)
 
 void Sq::enable_log(const std::string &log_filename)
 {
-	auto log = spdlog::rotating_logger_mt("log", log_filename, 1024 * 1024 * 10, 1, true);
+	auto log = spdlog::rotating_logger_mt("cache", log_filename + "_cache", 1024 * 1024 * 10, 1, true);
+	log = spdlog::rotating_logger_mt("proxy", log_filename + "_proxy", 1024 * 1024 * 10, 1, true);
 }
 
 void Sq::stop()
