@@ -1,4 +1,5 @@
 #include <gmock/gmock.h>
+#include "../src/utility.hpp"
 #include "../src/storage.hpp"
 #include "../src/url.hpp"
 #include "mock_storage.hpp"

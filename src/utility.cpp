@@ -1,5 +1,5 @@
 #include <md5.h>
-
+#include <string>
 
 void charHex(unsigned char c, unsigned char &l, unsigned char &h)
 {
