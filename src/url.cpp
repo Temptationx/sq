@@ -227,3 +227,14 @@ std::string filter(const std::string &url, std::vector<std::string> params, Filt
 	return buildURL(path, out);
 }
 
+std::string get_host(const std::string &url)
+{
+	auto first = url.find("//");
+	if (first == std::string::npos) {
+		return std::string();
+	}
+	first += 2;
+	auto last = url.find("/", first);
+	return std::string(url, first, last - first);
+}
+
