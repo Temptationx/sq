@@ -27,7 +27,7 @@ end)ABCD";
 void main()
 {
 	Sq sq("1024", 3, 1024);
-	sq.enable_log("cache_log.txt");
+	sq.enable_log("cache_log");
 	sq.start();
 	sq.add_rule("http://s.taobao.com/search", s_tb_s_url_rule, "");
 	sq.add_rule("http://click.simba.taobao.com/cc_im", click_simba_tb_url_rule, "");

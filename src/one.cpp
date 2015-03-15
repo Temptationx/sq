@@ -1,16 +1,19 @@
 #include "one.hpp"
-
+#include <spdlog/spdlog.h>
 
 void Sq::link()
 {
 	storage->loadAll();
 	stream->addStreamCallback([this](const StreamID &id, shared_ptr<Request> req, shared_ptr<Response> res) {
 		if (req && res) {
+			spdlog::get("log")->info() << "[Cache] " <<req->url;
 			storage->add(req->url, res);
 		}
 	});
 	server->setListener([this](const string &url) -> shared_ptr < Response > {
+		
 		auto res = proxy->onRequest(url);
+		spdlog::get("log")->info() << "[Server] " << (res ? "[Found]" : "[!]") << " " << url;
 		return res;
 	});
 }
@@ -43,6 +46,7 @@ Sq::Sq(const std::string dir, int inter, int proxy_server_port)
 
 void Sq::enable_log(const std::string &log_filename)
 {
+	auto log = spdlog::rotating_logger_mt("log", log_filename, 1024 * 1024 * 10, 1, true);
 }
 
 void Sq::stop()
