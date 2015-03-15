@@ -200,7 +200,9 @@ std::shared_ptr<Response> Proxy::onRequest(std::string url)
 
 	// lookup
 	auto cache = m_storage->get(modified_url);
-
+	if (!cache) {
+		return nullptr;
+	}
 	// post
 	auto it2 = m_post_handlers.find(path);
 	if (it2 != m_post_handlers.end()) {
