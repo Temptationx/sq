@@ -15,7 +15,7 @@ void Sq::link()
 		{
 			return nullptr;
 		}
-		auto res = proxy->onRequest(url);
+		auto res = proxy_->onRequest(url);
 		spdlog::get("proxy")->info() << (res ? "[Found]" : "[!]") << " " << url;
 		return res;
 	});
@@ -42,7 +42,7 @@ Sq::Sq(const std::string dir, int inter, int proxy_server_port)
 {
 	storage = move(PersistentStorageFactory::build(dir));
 	stream = std::make_unique<SnifferStream>(inter);
-	proxy = std::make_unique<Proxy>(storage.get());
+	proxy_ = std::make_unique<Proxy>(storage.get());
 	server.reset(ServerFactory::build(proxy_server_port));
 	link();
 }
@@ -69,7 +69,7 @@ Sq::~Sq()
 	}
 }
 
-void Sq::add_rule(const std::string &path, const std::string &rules_script, const std::string &body_script)
+Proxy* Sq::proxy()
 {
-	proxy->addRule(path, rules_script, body_script);
+	return proxy_.get();
 }

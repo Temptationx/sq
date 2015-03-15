@@ -21,9 +21,10 @@ EXTERN_C SQ_API void stop()
 	sq->stop();
 }
 
-EXTERN_C SQ_API void add_rule(const char *path, const char *url_rule, const char *body_rule)
+EXTERN_C SQ_API void add_rule(const char *path, const char *pre_rule, const char *post_rule)
 {
-	sq->add_rule(path, url_rule, body_rule);
+	sq->proxy()->addPreRule(path, std::string(pre_rule));
+	sq->proxy()->addPostRule(path, std::string(post_rule));
 }
 
 BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reserved)
