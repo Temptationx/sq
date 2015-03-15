@@ -22,6 +22,7 @@ std::string buildURL(const std::string &path, const std::map<std::string, std::s
 
 URL parse_url(const std::string &url);
 void parse_url(const std::string &url, std::string &path, std::string &query);
+std::string get_host(const std::string &url);
 std::map<std::string, std::string> parseQuery(const std::string &query);
 
 // Separate string use ch, it will ignore empty substring

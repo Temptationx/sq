@@ -202,8 +202,7 @@ std::string filter(const std::string &url, std::vector<std::string> params, Filt
 	auto header = parseQuery(query);
 	std::map<std::string, std::string> out;
 	if (filter == optin) {
-		for (auto &param : params)
-		{
+		for (auto &param : params) {
 			auto it = header.find(param);
 			if (it == header.end()) {
 				throw std::exception();
@@ -214,8 +213,7 @@ std::string filter(const std::string &url, std::vector<std::string> params, Filt
 		}
 	}
 	else{
-		for (auto &param : params)
-		{
+		for (auto &param : params) {
 			auto it = header.find(param);
 			if (it == header.end()) {
 				continue;
@@ -227,5 +225,16 @@ std::string filter(const std::string &url, std::vector<std::string> params, Filt
 		out = header;
 	}
 	return buildURL(path, out);
+}
+
+std::string get_host(const std::string &url)
+{
+	auto first = url.find("//");
+	if (first == std::string::npos) {
+		return std::string();
+	}
+	first += 2;
+	auto last = url.find("/", first);
+	return std::string(url, first, last - first);
 }
 
