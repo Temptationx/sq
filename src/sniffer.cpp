@@ -50,6 +50,7 @@ void TinsSniffer::startSniff()
 		follower.follow_streams(*m_tinsSniffer, data_fun, close_fun);
 	}
 	catch (...) {
+		printf("sniffer exception");
 	}
 }
 
@@ -64,7 +65,7 @@ void TinsSniffer::setFilter(const std::string &filter)
 	m_tinsSniffer->set_filter(filter);
 }
 
-void TinsSniffer::promot(const SnifferCallback &cb, const StreamID &id, std::vector<uint8_t> &v, CallReason reason) const
+void TinsSniffer::callCallback(const SnifferCallback &cb, const StreamID &id, std::vector<uint8_t> &v, CallReason reason) const
 {
 	if (!v.empty()) {
 		cb(id, (const char*)v.data(), v.size(), reason);
@@ -78,8 +79,8 @@ void TinsSniffer::onData(Tins::TCPStream &st) const
 	{
 		if (cb) {
 			auto id = convertID(st.stream_info());
-			promot(cb, id, st.client_payload(), CallReasonRequest);
-			promot(cb, id, st.server_payload(), CallReasonResponse);
+			callCallback(cb, id, st.client_payload(), CallReasonRequest);
+			callCallback(cb, id, st.server_payload(), CallReasonResponse);
 		}
 	}
 }
