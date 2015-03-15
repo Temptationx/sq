@@ -1,5 +1,18 @@
 #include "one.hpp"
+#include "url.hpp"
 #include <spdlog/spdlog.h>
+
+std::map<std::string, bool> blacklist{
+{"gm.mmstat.com", true},
+{ "log.mmstat.com", true },
+{ "ac.mmstat.com", true },
+{ "amos.alicdn.com", true },
+{ "q5.cnzz.com", true }, 
+{ "ac.atpanel.com", true }, 
+{ "count.tbcdn.cn", true },
+{"hotclick.app.linezing.com", true},
+{"cnzz.mmstat.com", true},
+{"amos.im.alisoft.com", true}};
 
 void Sq::link()
 {
@@ -11,8 +24,8 @@ void Sq::link()
 		}
 	});
 	server->setListener([this](const string &url) -> shared_ptr < Response > {
-		if (url.find("hotclick.app") != std::string::npos)
-		{
+		std::string host = get_host(url);
+		if (blacklist.find(host) != blacklist.end()) {
 			return nullptr;
 		}
 		auto res = proxy_->onRequest(url);
