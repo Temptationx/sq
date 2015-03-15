@@ -1,8 +1,9 @@
 #include <string>
 #include <http_parser.h>
+#include "utility.hpp"
 #include "parser.hpp"
 #include "type.hpp"
-#include "gzip.hpp"
+
 
 ParserBase::ParserBase() : ParserBase(0)
 {
