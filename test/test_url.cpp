@@ -188,31 +188,31 @@ public:
 
 TEST_F(ParseUrlTest, NoQuery)
 {
-	auto ret = parseURL(noQuery);
+	auto ret = parse_url(noQuery);
 	ASSERT_EQ(ret, noQueryPair);
 }
 
 TEST_F(ParseUrlTest, HasQuery)
 {
-	auto ret = parseURL(hasQuery);
+	auto ret = parse_url(hasQuery);
 	ASSERT_EQ(ret, hasQueryPair);
 }
 
 TEST_F(ParseUrlTest, ConcatQuery)
 {
-	auto ret = parseURL(concatQuery);
+	auto ret = parse_url(concatQuery);
 	ASSERT_EQ(ret, concatQueryPair);
 }
 
 TEST_F(ParseUrlTest, ConcatQueryWithV)
 {
-	auto ret = parseURL(concatQueryWithV);
+	auto ret = parse_url(concatQueryWithV);
 	ASSERT_EQ(ret, concatQueryWithVPair);
 }
 
 TEST_F(ParseUrlTest, ConcatQueryWithAmp)
 {
-	auto ret = parseURL(concatQueryWithAmp);
+	auto ret = parse_url(concatQueryWithAmp);
 	ASSERT_EQ(ret, concatQueryWithAmpPair);
 }
 
@@ -243,7 +243,7 @@ TEST(CMPMAP, ValueNotEq)
 TEST(parseURLSig2, NormalTest)
 {
 	std::string path, query, url("http://www.baidu.com/?q=jik");
-	parseURL(url, path, query);
+	parse_url(url, path, query);
 	ASSERT_EQ(path, "http://www.baidu.com/");
 	ASSERT_EQ(query, "q=jik");
 }
@@ -253,7 +253,7 @@ TEST(parseURLSig2, NormalTest)
 TEST(W, W)
 {
 	string path, query;
-	parseURL("http://taobao.com/??ie9.js,webkit.js?v=1.1", path, query);
+	parse_url("http://taobao.com/??ie9.js,webkit.js?v=1.1", path, query);
 	ASSERT_EQ("http://taobao.com/", path);
 	ASSERT_EQ("ie9.js,webkit.js", query);
 	auto header = parseQuery(query);
@@ -267,7 +267,7 @@ TEST(W, W)
 TEST(W, W2)
 {
 	string path, query;
-	parseURL("http://taobao.com/", path, query);
+	parse_url("http://taobao.com/", path, query);
 	auto header = parseQuery(query);
 	string url = buildURL(path, header);
 	ASSERT_EQ("http://taobao.com/", url);

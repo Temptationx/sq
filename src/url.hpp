@@ -20,13 +20,13 @@ struct URL
 
 std::string buildURL(const std::string &path, const std::map<std::string, std::string> &headers);
 
-URL parseURL(const std::string &url);
-void parseURL(const std::string &url, std::string &path, std::string &query);
+URL parse_url(const std::string &url);
+void parse_url(const std::string &url, std::string &path, std::string &query);
 std::map<std::string, std::string> parseQuery(const std::string &query);
 
 // Separate string use ch, it will ignore empty substring
 std::vector<std::string> separateString(const std::string &str, char ch);
-std::set<std::string> separateStringSet(const std::string &str, char ch);
+std::set<std::string> split_string(const std::string &str, char ch);
 // 
 std::pair<std::string, std::string> separateString2(const std::string &str, size_t pos);
 std::pair<std::string, std::string> separateString2(const std::string &str, char ch);

@@ -19,7 +19,7 @@ std::pair<std::string, std::string> separateString2(const std::string &str, char
 	return std::make_pair(std::string(str, 0, pos), std::string(str, pos + 1));
 }
 
-URL parseURL(const std::string &url)
+URL parse_url(const std::string &url)
 {
 	auto pos = url.find('?');
 	if (pos == std::string::npos){
@@ -43,9 +43,9 @@ URL parseURL(const std::string &url)
 	return URL{std::string(url, 0, pos), std::string(url, pos + 2, inter_pos - pos - 2)};
 }
 
-void parseURL(const std::string &url, std::string &path, std::string &query)
+void parse_url(const std::string &url, std::string &path, std::string &query)
 {
-	URL u = parseURL(url);
+	URL u = parse_url(url);
 	path = u.path;
 	query = u.query;
 }
@@ -121,7 +121,7 @@ bool compare_map2(const std::map<std::string, std::string> &m1, const std::map<s
 	return true;
 }
 
-std::set<std::string> separateStringSet(const std::string &str, char ch)
+std::set<std::string> split_string(const std::string &str, char ch)
 {
 	std::set<std::string> _list;
 	if (str.empty()) {
@@ -198,7 +198,7 @@ bool URL::operator==(const URL & rV)
 std::string filter(const std::string &url, std::vector<std::string> params, Filter filter)
 {
 	std::string path, query;
-	parseURL(url, path, query);
+	parse_url(url, path, query);
 	auto header = parseQuery(query);
 	std::map<std::string, std::string> out;
 	if (filter == optin) {
