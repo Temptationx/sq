@@ -11,15 +11,15 @@ TEST(TESTURLStorage, addget)
 	auto cached_pkt = make_shared<CachePacket>();
 	storage.add("http://www.baidu.com/search?q=1", cached_pkt);
 	auto pkt = storage.get("http://www.baidu.com/search?q=2");
-	ASSERT_FALSE(pkt->response);
+	ASSERT_FALSE(pkt);
 
 	pkt = storage.get("http://www.baidu.com/search?q=1");
 
-	ASSERT_TRUE(pkt->response);
+	ASSERT_TRUE(pkt);
 
 	storage.add("http://www.baidu.com/search?q=1&u=a&t=9", cached_pkt);
 	pkt = storage.get("http://www.baidu.com/search?q=1&u=a");
-	ASSERT_TRUE(pkt->response);
+	ASSERT_TRUE(pkt);
 }
 
 class MockIO : public IO
