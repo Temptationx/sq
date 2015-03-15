@@ -44,40 +44,64 @@ public:
 private:
 	int ss = 1;
 	int y = 0;
-	static int MgCall(mg_connection *conn, mg_event ev)
+	int mg_request(mg_connection *conn)
 	{
-		if (ev == MG_AUTH) {
-			return MG_TRUE;
-		}
-		else if (ev == MG_REQUEST){
-			if (std::string("CONNECT") == conn->request_method) {
-				return MG_FALSE;
-			}
-			auto _this = (MongooseServer*)conn->server_param;
-			auto url = linkUrl(conn);
-			std::shared_ptr<Response> res;
+		auto url = linkUrl(conn);
+		std::shared_ptr<Response> response;
 
-			if (_this->m_listener) {
-				res = _this->m_listener(url);
-			}
-			if (!res) {
-				return MG_FALSE;
-			}
-			mg_send_status(conn, res->status);
-			if (res->headers) {
-				for (auto head : *res->headers)
-				{
-					mg_send_header(conn, head.first.data(), head.second.data());
-				}
-			}
-			if (res->body) {
-				mg_send_data(conn, res->body->data(), res->body->size());
-			}
-			return MG_TRUE;
+		if (m_listener) {
+			response = m_listener(url);
 		}
-		else{
+		if (!response) {
 			return MG_FALSE;
 		}
+		mg_send_status(conn, response->status);
+		if (response->headers) {
+			for (auto head : *response->headers) {
+				mg_send_header(conn, head.first.data(), head.second.data());
+			}
+		}
+		if (response->body) {
+			mg_send_data(conn, response->body->data(), response->body->size());
+		}
+		return MG_TRUE;
+	}
+	static int MgCall(mg_connection *conn, mg_event ev)
+	{
+		switch (ev)
+		{
+			case MG_POLL:
+				break;
+			case MG_CONNECT:
+				break;
+			case MG_AUTH:
+				return MG_TRUE;
+				break;
+			case MG_REQUEST:
+			{
+				if (std::string("CONNECT") == conn->request_method) {
+					return MG_FALSE;
+				}
+				auto _this = (MongooseServer*)conn->server_param;
+				return _this->mg_request(conn);
+			}
+				break;
+			case MG_REPLY:
+				break;
+			case MG_RECV:
+				break;
+			case MG_CLOSE:
+				break;
+			case MG_WS_HANDSHAKE:
+				break;
+			case MG_WS_CONNECT:
+				break;
+			case MG_HTTP_ERROR:
+				break;
+			default:
+				break;
+		}
+		return MG_FALSE;
 	}
 	static std::string linkUrl(mg_connection * conn)
 	{
