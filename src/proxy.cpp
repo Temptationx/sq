@@ -123,6 +123,24 @@ end
 function is_tengine(url)
 	if url:find('%?%?') then return true else return false end
 end
+
+function url_rules_core(request_url, is_accept_list, l)
+	if is_accept_list == nil then is_accept_list = true end
+	local q_mark = '?'
+	if is_tengine(request_url) then q_mark = q_mark .. '?' end
+	local path, query = parse_url(request_url)
+	if not query or #query == 0 then return request_url end
+	local q_m = parse_query(query)
+	if is_accept_list then
+		q_m = accept(q_m, l)
+	else
+		q_m = ignore(q_m, l)
+	end
+	query = compress_query(q_m)
+	if query and #query > 0 then path = path .. q_mark end
+	path = path .. query
+	return path
+end
 )ABCD";
 }
 
