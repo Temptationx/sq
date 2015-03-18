@@ -9,7 +9,6 @@
 #include "storage.hpp"
 
 
-
 class Proxy
 {
 public:
