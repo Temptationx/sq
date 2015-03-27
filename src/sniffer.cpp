@@ -19,7 +19,7 @@ StreamID convertID(const Tins::TCPStream::StreamInfo &info)
 	return StreamID(info.client_addr, info.client_port);
 }
 
-TinsSniffer::TinsSniffer(int interface, bool promiscMode)
+TinsSniffer::TinsSniffer(int inter, bool promiscMode)
 {
 	Tins::SnifferConfiguration config;
 	config.set_buffer_size(1024 * 1024 * 50);
@@ -29,7 +29,7 @@ TinsSniffer::TinsSniffer(int interface, bool promiscMode)
 		printf("%s\n", n.name().data());
 		printf("%s\n",n.addresses().ip_addr.to_string().data());
 	}
-	m_tinsSniffer = std::make_unique<Tins::Sniffer>(Tins::NetworkInterface::all().at(interface).name(), config);
+	m_tinsSniffer = std::make_unique<Tins::Sniffer>(Tins::NetworkInterface::all().at(inter).name(), config);
 	m_tinsSniffer->set_filter(defaultFilter);
 }
 
@@ -95,4 +95,4 @@ void TinsSniffer::onClose(Tins::TCPStream &st) const
 	}
 }
 
-const char *TinsSniffer::defaultFilter = "tcp port 80";
+const char *TinsSniffer::defaultFilter = "";
