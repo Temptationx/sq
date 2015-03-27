@@ -1,9 +1,12 @@
 #include "one.hpp"
 #include "url.hpp"
 #include <spdlog/spdlog.h>
-
+#include <chrono>
+#include <thread>
+using namespace std;
 std::map<std::string, bool> blacklist{
 {"gm.mmstat.com", true},
+{"ga.mmstat.com", true},
 { "log.mmstat.com", true },
 { "ac.mmstat.com", true },
 { "amos.alicdn.com", true },
@@ -12,15 +15,16 @@ std::map<std::string, bool> blacklist{
 { "count.tbcdn.cn", true },
 {"hotclick.app.linezing.com", true},
 {"cnzz.mmstat.com", true},
-{"amos.im.alisoft.com", true}};
+{"amos.im.alisoft.com", true},
+{"cookiemapping.wrating.com", true}};
 
 void Sq::link()
 {
-	storage->loadAll();
+	storage_->loadAll();
 	stream->addStreamCallback([this](const StreamID &id, shared_ptr<CachePacket> pkt) {
 		if (pkt->request && pkt->response) {
 			spdlog::get("cache")->info() << pkt->url;
-			storage->add(pkt->url, pkt);
+			storage_->add(pkt->url, pkt);
 		}
 	});
 	server->setListener([this](const string &url) -> shared_ptr < Response > {
@@ -28,7 +32,12 @@ void Sq::link()
 		if (blacklist.find(host) != blacklist.end()) {
 			return nullptr;
 		}
+
 		auto res = proxy_->onRequest(url);
+		for (auto i=0; i< 30 && !res;i++){
+			this_thread::sleep_for(chrono::seconds(1));
+			res = proxy_->onRequest(url);
+		}
 		spdlog::get("proxy")->info() << (res ? "[Found]" : "[!]") << " " << url;
 		return res;
 	});
@@ -53,9 +62,9 @@ void Sq::start()
 
 Sq::Sq(const std::string dir, int inter, int proxy_server_port)
 {
-	storage = move(PersistentStorageFactory::build(dir));
+	storage_ = move(PersistentStorageFactory::build(dir));
 	stream = std::make_unique<SnifferStream>(inter);
-	proxy_ = std::make_unique<Proxy>(storage.get());
+	proxy_ = std::make_unique<Proxy>(storage_.get());
 	server.reset(ServerFactory::build(proxy_server_port));
 	link();
 }
@@ -82,7 +91,7 @@ Sq::~Sq()
 	}
 }
 
-Proxy* Sq::proxy()
+PersistentStorage* Sq::storage()
 {
-	return proxy_.get();
+	return storage_.get();
 }
