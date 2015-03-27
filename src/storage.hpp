@@ -46,16 +46,14 @@ public:
 
 class URLStorage : public IStore
 {
-	typedef std::map<std::string, std::shared_ptr<Response>> Map;
-	using Map2 = std::map<std::string, std::shared_ptr<CachePacket>>;
+	using Map = std::map<std::string, std::shared_ptr<CachePacket>>;
 public:
 	virtual ~URLStorage();
 	virtual void add(const std::string &url, std::shared_ptr<CachePacket> data) override;
 	virtual std::shared_ptr<CachePacket> get(const std::string &url) override;
 private:
 	bool compare(const std::set<std::string> &reqired, const std::set<std::string> &t);
-	Map m;
-	Map2 cache_map;
+	Map cache_map;
 };
 
 class PersistentStorage : public IStore
