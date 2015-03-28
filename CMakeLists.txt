@@ -28,13 +28,6 @@ set(HTTP_PARSER_RELEASE C:/Users/ning/Desktop/http-parser-master/build/Release/h
 include_directories(${HTTP_PARSER_INCLUDE})
 ################################
 
-########### Mongoose ###########
-set(MONGOOSE_INCLUDE C:/Users/ning/Desktop/mongoose-master)
-set(MONGOOSE_DEBUG C:/Users/ning/Desktop/mongoose-master/build/Debug/mongoose.lib)
-set(MONGOOSE_RELEASE C:/Users/ning/Desktop/mongoose-master/build/Release/mongoose.lib)
-include_directories(${MONGOOSE_INCLUDE})
-################################
-
 ############# MD5 ##############
 set(MD5_INCLUDE C:/Users/ning/Desktop/md5)
 set(MD5_DEBUG C:/Users/ning/Desktop/md5/build/Debug/md5.lib)
@@ -124,7 +117,6 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS) # -DBOOST_A
 set(DEBUG_LIB     "${TINS_DEBUG}" 
                   "${ZLIB_DEBUG}" 
                   "${HTTP_PARSER_DEBUG}" 
-                  "${MONGOOSE_DEBUG}" 
                   "${MD5_DEBUG}"
                   "${BOOST_DEBUG}"
                   "${LUA_DEBUG}"
@@ -133,7 +125,6 @@ set(DEBUG_LIB     "${TINS_DEBUG}"
 set(RELEASE_LIB   "${TINS_RELEASE}" 
                   "${ZLIB_RELEASE}" 
                   "${HTTP_PARSER_RELEASE}" 
-                  "${MONGOOSE_RELEASE}" 
                   "${MD5_RELEASE}"
                   "${BOOST_RELEASE}"
                   "${LUA_RELEASE}"
