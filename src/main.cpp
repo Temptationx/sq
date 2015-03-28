@@ -72,7 +72,7 @@ void main()
 
 	//sq.proxy()->addPreRule("http://uaction.aliyuncdn.com/js/ua.js", erase_all_query);
 
-	//sq.proxy()->addJSONPRule("http://suggest.taobao.com/sug", { "_ksTS" });
+	sq.storage()->addRule("http://suggest.taobao.com/sug", json_replace_weekend);
 
 	//sq.proxy()->addPreQueryFilter("http://aldcdn.tmall.com/recommend.htm", Proxy::FilterType::Ignore, "{'refer'}");
 
