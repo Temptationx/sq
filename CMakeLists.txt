@@ -68,6 +68,25 @@ include_directories(${LUA_INCLUDE})
 # set(CPPFORMAT_INCLUDE )
 ################################
 
+############ POCO ##############
+set(POCO_DIR "C:/Users/ning/Desktop/poco-1.6.0")
+set(POCO_FOUNDATION_INCLUDE "${POCO_DIR}/Foundation/include")
+set(POCO_NET_INCLUDE "${POCO_DIR}/Net/include")
+include_directories("${POCO_FOUNDATION_INCLUDE}" "${POCO_NET_INCLUDE}")
+
+set(POCO_LIB_DIR "C:/Users/ning/Desktop/poco-1.6.0/lib")
+
+set(POCO_FOUNDATION_LIB_DEBUG "${POCO_LIB_DIR}/PocoFoundationmdd.lib")
+set(POCO_FOUNDATION_LIB_RELEASE "${POCO_LIB_DIR}/PocoFoundationmd.lib")
+set(POCO_NET_LIB_DEBUG "${POCO_LIB_DIR}/PocoNetmdd.lib")
+set(POCO_NET_LIB_RELEASE "${POCO_LIB_DIR}/PocoNetmd.lib")
+
+set(POCO_DEBUG "${POCO_FOUNDATION_LIB_DEBUG}" "${POCO_NET_LIB_DEBUG}")
+set(POCO_RELEASE "${POCO_FOUNDATION_LIB_RELEASE}" "${POCO_NET_LIB_RELEASE}")
+
+add_definitions(-DPOCO_STATIC)
+################################
+
 include_directories("C:/usr/include"
                     src)
 
@@ -91,15 +110,15 @@ set(LIB_SRC src/sniffer.cpp
             src/parser.hpp
             src/sniffer_stream.cpp
             src/sniffer_stream.hpp
-		    src/serialization.cpp
-		    src/serialization.hpp
+            src/serialization.cpp
+            src/serialization.hpp
             src/one.cpp
             src/one.hpp
             src/utility.hpp
             src/utility.cpp)
 
 ###### Project ######
-add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)# -DBOOST_ALL_NO_LIB)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS) # -DBOOST_ALL_NO_LIB)
 
 # Main Dependencies
 set(DEBUG_LIB     "${TINS_DEBUG}" 
@@ -108,7 +127,8 @@ set(DEBUG_LIB     "${TINS_DEBUG}"
                   "${MONGOOSE_DEBUG}" 
                   "${MD5_DEBUG}"
                   "${BOOST_DEBUG}"
-                  "${LUA_DEBUG}")
+                  "${LUA_DEBUG}"
+                  "${POCO_DEBUG}")
 
 set(RELEASE_LIB   "${TINS_RELEASE}" 
                   "${ZLIB_RELEASE}" 
@@ -116,7 +136,8 @@ set(RELEASE_LIB   "${TINS_RELEASE}"
                   "${MONGOOSE_RELEASE}" 
                   "${MD5_RELEASE}"
                   "${BOOST_RELEASE}"
-                  "${LUA_RELEASE}")
+                  "${LUA_RELEASE}"
+                  "${POCO_RELEASE}")
 
 set(DEBUG_RELEASE_LIB Iphlpapi "${PCAP_LIB}" ws2_32)
 
