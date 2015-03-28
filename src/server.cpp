@@ -7,6 +7,8 @@
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/SharedPtr.h>
+#include <Poco/URI.h>
+
 
 using namespace std;
 using namespace Poco;
@@ -70,7 +72,11 @@ PocoServer::PocoServer(uint16_t port)
 void RequestHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &response)
 {
 	auto url = request.getURI();
-	
+	auto uri = URI(url);
+	if (uri.getScheme() == "https"){
+		response.setStatusAndReason(HTTPResponse::HTTP_UNSUPPORTEDMEDIATYPE);
+		response.send();
+	}
 	// Work here
 	assert(server_->m_listener);
 	auto response_ = server_->m_listener(url);
