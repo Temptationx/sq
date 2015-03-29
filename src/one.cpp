@@ -40,8 +40,9 @@ void Sq::link()
 			this_thread::sleep_for(chrono::seconds(1));
 			res = proxy_->onRequest(url);
 		}
-		spdlog::get("proxy")->info() << (res ? "[Found]" : "[!]") << " " << url;
-		return res;
+		spdlog::get("proxy")->info() << (res && res->response ? "[Found]" : "[!]") << " " << url;
+		
+		return (res && res->response) ? res->response : nullptr;
 	});
 }
 

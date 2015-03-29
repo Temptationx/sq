@@ -15,7 +15,7 @@ public:
 	Proxy(IStore *storage);
 	Proxy(const Proxy &) = delete;
 	~Proxy() = default;
-	std::shared_ptr<Response> onRequest(std::string url);
+	std::shared_ptr<CachePacket> onRequest(std::string url);
 private:
 	IStore *m_storage = nullptr;
 };

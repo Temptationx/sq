@@ -7,11 +7,8 @@ Proxy::Proxy(IStore *storage) : m_storage(storage)
 {
 }
 
-std::shared_ptr<Response> Proxy::onRequest(std::string url)
+std::shared_ptr<CachePacket> Proxy::onRequest(std::string url)
 {
 	auto cache = m_storage->get(url);
-	if (cache && cache->response) {
-		return cache->response;
-	}
-	return nullptr;
+	return cache;
 }
