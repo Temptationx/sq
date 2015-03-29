@@ -73,9 +73,11 @@ void RequestHandler::handleRequest(HTTPServerRequest &request, HTTPServerRespons
 {
 	auto url = request.getURI();
 	auto uri = URI(url);
-	if (uri.getScheme() == "https"){
+	
+	if (uri.getScheme() != "http"){
 		response.setStatusAndReason(HTTPResponse::HTTP_UNSUPPORTEDMEDIATYPE);
 		response.send();
+		return;
 	}
 	// Work here
 	assert(server_->m_listener);
