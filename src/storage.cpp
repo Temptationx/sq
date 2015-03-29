@@ -291,8 +291,8 @@ function replace_field(request_url, rule, field_name)
 	cache_url = parse_url2(cache_url)
 	local pkt = get_pkt(storage, cache_url.url)
 	local body = copy_body(pkt)
-	local cache_jsonp = request_url.query_table[field_name]
-	local request_jsonp = cache_url.query_table[field_name]
+	local request_jsonp = request_url.query_table[field_name]
+	local cache_jsonp = cache_url.query_table[field_name]
 	print('jsonp', cache_jsonp, request_jsonp, request_url.url)
 	body = body:gsub(cache_jsonp, request_jsonp)
 	-- body:gsub
