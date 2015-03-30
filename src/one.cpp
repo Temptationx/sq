@@ -1,5 +1,6 @@
 #include "one.hpp"
 #include "url.hpp"
+#include "utility.hpp"
 #include <spdlog/spdlog.h>
 #include <chrono>
 #include <thread>
@@ -34,11 +35,15 @@ void Sq::link()
 		if (blacklist.find(host) != blacklist.end()) {
 			return nullptr;
 		}
-
+		bool is_tengine = url.find("??") != std::string::npos;
 		auto res = proxy_->onRequest(url);
-		for (auto i=0; i< 30 && !res;i++){
+		int wait_count = 20;
+		for (auto i = 0; i< wait_count && !res; i++){
 			this_thread::sleep_for(chrono::seconds(1));
 			res = proxy_->onRequest(url);
+		}
+		if (is_tengine && !res) {
+			throw TengineNotCached();
 		}
 		spdlog::get("proxy")->info() << (res && res->response ? "[Found]" : "[!]") << " " << url;
 		
