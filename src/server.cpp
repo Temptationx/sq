@@ -1,13 +1,19 @@
-#include <cassert>
-#include "server.hpp"
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Net/HTTPServer.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
+#include <Poco/Net/HTTPClientSession.h>
 #include <Poco/SharedPtr.h>
+#include <Poco/StreamCopier.h>
 #include <Poco/URI.h>
+#include <map>
+#include <sstream>
+#include <spdlog/spdlog.h>
+#include <cassert>
+#include "utility.hpp"
+#include "server.hpp"
 
 
 using namespace std;
@@ -71,34 +77,67 @@ PocoServer::PocoServer(uint16_t port)
 
 void RequestHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &response)
 {
-	auto url = request.getURI();
-	auto uri = URI(url);
-	
-	if (uri.getScheme() != "http"){
-		response.setStatusAndReason(HTTPResponse::HTTP_UNSUPPORTEDMEDIATYPE);
-		response.send();
-		return;
-	}
-	// Work here
-	assert(server_->m_listener);
-	auto response_ = server_->m_listener(url);
+	try{
+		try{
+			auto url = request.getURI();
+			auto uri = URI(url);
 
-	if (!response_) {
-		response.setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
-		response.send();
-		return;
-	}
-	response.setStatusAndReason(HTTPResponse::HTTPStatus(response_->status));
-	if (response_->headers) {
-		for (auto p : *response_->headers) {
-			response.set(p.first, p.second);
+			if (uri.getScheme() != "http"){
+				response.setStatusAndReason(HTTPResponse::HTTP_UNSUPPORTEDMEDIATYPE);
+				response.send();
+				return;
+			}
+			// Work here
+			assert(server_->m_listener);
+			auto response_ = server_->m_listener(url);
+			if (!response_) {
+				response.setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
+				response.send();
+				return;
+			}
+			response.setStatusAndReason(HTTPResponse::HTTPStatus(response_->status));
+			if (response_->headers) {
+				for (auto p : *response_->headers) {
+					response.set(p.first, p.second);
+				}
+			}
+			if (response_->body){
+				response.sendBuffer(response_->body->data(), response_->body->size());
+			}
+			if (!response.sent()) {
+				response.send();
+			}
+			return;
+		}
+		catch (TengineNotCached e){
+			spdlog::get("proxy")->error() << "[TENGINE] " << request.getURI();
+			URI uri(request.getURI());
+			if (uri.getScheme() != "http") {
+				return;
+			}
+			auto path = URI(request.getURI()).getPathAndQuery();
+			if (path.empty()){
+				path = "/";
+			}
+			HTTPClientSession session(uri.getHost(), uri.getPort());
+			HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
+			HTTPResponse res;
+			session.sendRequest(req);
+			auto &rs = session.receiveResponse(res);
+			std::cout << res.getStatus() << " " << res.getReason() << std::endl;
+			std::stringstream ss;
+			StreamCopier::copyStream(rs, ss);
+			response.setStatusAndReason(res.getStatus());
+			for (auto it = res.begin(); it != res.end(); it++) {
+				response.set(it->first, it->second);
+				cout << it->first << ": " << it->second << endl;
+			}
+			auto s = ss.str();
+			response.sendBuffer(s.data(), s.size());
 		}
 	}
-	if (response_->body){
-		response.sendBuffer(response_->body->data(), response_->body->size());
-	}
-	if (!response.sent()) {
-		response.send();
+	catch (Poco::Exception e){
+		spdlog::get("proxy")->error() << "[POCO] [Exception] "<<e.displayText();
 	}
 }
 
