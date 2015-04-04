@@ -7,6 +7,12 @@
 #include "proxy.hpp"
 using namespace std;
 
+namespace Poco{
+	namespace Net{
+		class HTTPServer;
+	}
+}
+
 class Sq
 {
 public:
@@ -26,4 +32,5 @@ private:
 	std::thread mm;
 	std::thread ss;
 	int stoped = 0;
+	Poco::Net::HTTPServer *control_server = nullptr;
 };

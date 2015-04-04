@@ -1,25 +1,85 @@
 #include "one.hpp"
 #include "url.hpp"
 #include "utility.hpp"
+#include <Poco/Net/HTTPRequestHandler.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
+#include <Poco/Net/HTTPServer.h>
+#include <Poco/Net/HTTPServerRequest.h>
+#include <Poco/Net/HTTPServerResponse.h>
+#include <Poco/Net/HTTPClientSession.h>
+#include <Poco/SharedPtr.h>
+#include <Poco/StreamCopier.h>
+#include <Poco/URI.h>
+#include <map>
+
 #include <spdlog/spdlog.h>
 #include <chrono>
 #include <thread>
 using namespace std;
+using namespace Poco;
+using namespace Poco::Net;
 
+std::map<std::string, bool> blacklist;
 
-std::map<std::string, bool> blacklist{
-{"gm.mmstat.com", true},
-{"ga.mmstat.com", true},
-{ "log.mmstat.com", true },
-{ "ac.mmstat.com", true },
-{ "amos.alicdn.com", true },
-{ "q5.cnzz.com", true }, 
-{ "ac.atpanel.com", true }, 
-{ "count.tbcdn.cn", true },
-{"hotclick.app.linezing.com", true},
-{"cnzz.mmstat.com", true},
-{"amos.im.alisoft.com", true},
-{"cookiemapping.wrating.com", true}};
+int wait_count = 20;
+
+class ControlRequest : public HTTPRequestHandler
+{
+public:
+	virtual void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) override
+	{
+		try
+		{
+			auto uri = URI(request.getURI());
+			auto params = uri.getQueryParameters();
+			map<string, string> query;
+			for (auto p : params) {
+				query.emplace(p.first, p.second);
+			}
+			auto command = query["c"];
+			if (command == "black") {
+				auto host = query["host"];
+				blacklist.emplace(host, true);
+			}
+			else if (command == "rule") {
+				auto path = query["path"];
+				auto script = query["script"];
+				assert(sq);
+				sq->storage()->addRule(path, script);
+			}
+			else if (command == "max_wait"){
+				auto max_wait = stoi(query["max_wait"]);
+				wait_count = max_wait;
+			}
+			else {
+				response.setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
+				response.send();
+				return;
+			}
+			response.setStatus(HTTPResponse::HTTP_OK);
+			response.send();
+		}
+		catch (...) {
+			response.setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
+			response.send();
+		}
+	}
+	Sq *sq = nullptr;
+private:
+};
+
+class ControlRequestFactory : public HTTPRequestHandlerFactory
+{
+public:
+	virtual HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request) override
+	{
+		auto handler = new ControlRequest;
+		handler->sq	 = sq;
+		return handler;
+	}
+	Sq *sq = nullptr;
+};
 
 void Sq::link()
 {
@@ -31,21 +91,23 @@ void Sq::link()
 		}
 	});
 	server->setListener([this](const string &url) -> shared_ptr < Response > {
-		std::string host = get_host(url);
-		if (blacklist.find(host) != blacklist.end()) {
-			return nullptr;
+		for (auto black : blacklist) {
+			if (url.find(black.first) == 0) {
+				return nullptr;
+			}
 		}
 		bool is_tengine = url.find("??") != std::string::npos;
 		auto res = proxy_->onRequest(url);
-		int wait_count = 20;
-		for (auto i = 0; i< wait_count && !res; i++){
+		
+		int i = 0;
+		for (; i< wait_count && !res; i++){
 			this_thread::sleep_for(chrono::seconds(1));
 			res = proxy_->onRequest(url);
 		}
 		if (is_tengine && !res) {
 			throw TengineNotCached();
 		}
-		spdlog::get("proxy")->info() << (res && res->response ? "[Found]" : "[!]") << " " << url;
+		spdlog::get("proxy")->info() << (res && res->response ? "[Found]" : "[!]") << " [" << i << "] " << url;
 		
 		return (res && res->response) ? res->response : nullptr;
 	});
@@ -70,6 +132,10 @@ void Sq::start()
 
 Sq::Sq(const std::string dir, int inter, int proxy_server_port)
 {
+	auto request_factory = new ControlRequestFactory;
+	request_factory->sq = this;
+	control_server = new Poco::Net::HTTPServer(request_factory, 1023);
+	control_server->start();
 	storage_ = move(PersistentStorageFactory::build(dir));
 	stream = std::make_unique<SnifferStream>(inter);
 	proxy_ = std::make_unique<Proxy>(storage_.get());
@@ -97,6 +163,7 @@ Sq::~Sq()
 	if (!stoped) {
 		stop();
 	}
+	delete control_server;
 }
 
 PersistentStorage* Sq::storage()
